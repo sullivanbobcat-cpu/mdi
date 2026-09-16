@@ -1,0 +1,1 @@
+{"rates":[{"field":"date","name":"Date","type":"calendar_date"},{"field":"week","name":"Week","type":"number"},{"field":"month","name":"Month","type":"number"},{"field":"year","name":"Year","type":"number"},{"field":"location","name":"Location","type":"text"},{"field":"rate","name":"Rate","type":"number"}]}

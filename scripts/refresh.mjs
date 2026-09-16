@@ -28,23 +28,74 @@ const day = (v) => String(v).slice(0, 10);
 const round = (v, dp = 2) => (v === null || Number.isNaN(v) ? null : Math.round(v * 10 ** dp) / 10 ** dp);
 const median = (arr) => { const s = [...arr].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
 
-async function getJSON(url) {
-  const headers = process.env.SOCRATA_APP_TOKEN ? { 'X-App-Token': process.env.SOCRATA_APP_TOKEN } : {};
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
-  return res.json();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function getJSON(url, attempts = 4) {
+  const headers = {
+    Accept: 'application/json',
+    'User-Agent': 'marketdatainsider.com data refresh (+https://marketdatainsider.com)',
+  };
+  if (process.env.SOCRATA_APP_TOKEN) headers['X-App-Token'] = process.env.SOCRATA_APP_TOKEN;
+  for (let i = 1; i <= attempts; i++) {
+    const t0 = Date.now();
+    try {
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(90_000) });
+      if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const body = (await res.text()).slice(0, 300);
+        const err = new Error(`HTTP ${res.status} for ${url}\n${body}`);
+        err.fatal = true;
+        throw err;
+      }
+      const data = await res.json();
+      console.log(`  ok ${res.status} ${Date.now() - t0}ms ${url.replace(BASE, '')}`);
+      return data;
+    } catch (e) {
+      const why = [e.message, e.cause?.code, e.cause?.message].filter(Boolean).join(' | ');
+      if (e.fatal || i === attempts) throw new Error(`Request failed after ${i} attempt(s): ${url}\n  ${why}`);
+      console.warn(`  retry ${i}/${attempts - 1} in ${2 ** i}s: ${why}`);
+      await sleep(2000 * 2 ** (i - 1));
+    }
+  }
+}
+
+// Infer column types from real rows. USDA's /api/views metadata can come back with no
+// columns, so the data itself is the source of truth.
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/;
+export function inferSchema(rows) {
+  const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) => !k.startsWith(':'));
+  return keys.map((field) => {
+    const vals = rows.map((r) => r[field]).filter((v) => v !== null && v !== undefined && v !== '');
+    let type = 'text';
+    if (vals.length && vals.every((v) => typeof v === 'string' && ISO_DATE.test(v))) type = 'calendar_date';
+    else if (vals.length && vals.every((v) => typeof v !== 'object' && v !== '' && Number.isFinite(Number(v)))) type = 'number';
+    return { field, name: field.replace(/_/g, ' '), type };
+  });
 }
 
 export async function getSchema(id) {
-  const view = await getJSON(`${BASE}/api/views/${id}.json`);
-  return view.columns
-    .filter((c) => !c.fieldName.startsWith(':'))
-    .map((c) => ({ field: c.fieldName, name: c.name, type: c.dataTypeName }));
+  const sample = await getJSON(`${BASE}/resource/${id}.json?$limit=1000`);
+  if (!Array.isArray(sample) || !sample.length) {
+    throw new Error(`Dataset ${id} returned no rows from /resource/${id}.json. The ID may point to a chart or filtered view, not the base table.`);
+  }
+  const schema = inferSchema(sample);
+  if (!schema.length) throw new Error(`Dataset ${id} returns rows with no fields. It is a chart or view, not a data table. Find the base dataset ID.`);
+  // Use the portal's display names when the metadata endpoint provides them.
+  try {
+    const view = await getJSON(`${BASE}/api/views/${id}.json`, 1);
+    for (const c of view.columns || []) {
+      const hit = schema.find((x) => x.field === c.fieldName);
+      if (hit && c.name) hit.name = c.name;
+    }
+  } catch { /* names are optional */ }
+  console.log(`  ${id} columns: ${schema.map((c) => `${c.field}(${c.type})`).join(', ')}`);
+  console.log(`  ${id} sample row: ${JSON.stringify(sample[0])}`);
+  return schema;
 }
 
 async function getRows(id, dateField, since) {
   const rows = [];
-  const pageSize = 50000;
+  const pageSize = 5000;
   for (let offset = 0; ; offset += pageSize) {
     const q = new URLSearchParams({
       $where: `${dateField} >= '${since}'`,
@@ -155,8 +206,9 @@ async function main() {
   await mkdir(new URL('../data/', import.meta.url), { recursive: true });
   const write = (name, obj) => writeFile(new URL(`../data/${name}`, import.meta.url), JSON.stringify(obj));
 
-  const [rSchema, mSchema] = await Promise.all([getSchema(DATASETS.rates), getSchema(DATASETS.movements)]);
-  await write('_schema.json', { rates: rSchema, movements: mSchema });
+  console.log(`Pulling USDA AgTransport data since ${since.slice(0, 10)}`);
+  const rSchema = await getSchema(DATASETS.rates);
+  await write('_schema.json', { rates: rSchema });
 
   const rRows = await getRows(DATASETS.rates, dateColumn(rSchema), since);
   const series = normalizeRates(rSchema, rRows);
@@ -167,13 +219,24 @@ async function main() {
     series, // key -> [[date, pct_of_tariff, usd_per_ton], ...]
   });
 
-  const mRows = await getRows(DATASETS.movements, dateColumn(mSchema), since);
-  await write('movements.json', { updated, source: `${BASE}/d/${DATASETS.movements}`, ...normalizeMovements(mSchema, mRows) });
-
   const counts = Object.entries(series).map(([k, v]) => `${k}:${v.length}`).join(' ');
-  console.log(`rates rows=${rRows.length} (${counts}) | movement rows=${mRows.length}`);
+  console.log(`rates rows=${rRows.length} (${counts}) -> data/rates.json`);
+
+  // Lock movements are optional: a failure here must not block the rates page.
+  try {
+    const mSchema = await getSchema(DATASETS.movements);
+    const mRows = await getRows(DATASETS.movements, dateColumn(mSchema), since);
+    await write('movements.json', { updated, source: `${BASE}/d/${DATASETS.movements}`, ...normalizeMovements(mSchema, mRows) });
+    console.log(`movement rows=${mRows.length} -> data/movements.json`);
+  } catch (e) {
+    console.warn(`\nWARNING: skipped lock movements (rates were still written)\n${e.message}`);
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main().catch((e) => { console.error(e.message); process.exit(1); });
+  main().catch((e) => {
+    console.error(`\nREFRESH FAILED\n${e.message}`);
+    if (e.cause) console.error('cause:', e.cause);
+    process.exit(1);
+  });
 }
