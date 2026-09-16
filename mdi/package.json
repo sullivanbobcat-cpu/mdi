@@ -1,0 +1,11 @@
+{
+  "name": "marketdatainsider",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "refresh": "node scripts/refresh.mjs",
+    "test": "node test/normalize.test.mjs",
+    "serve": "npx --yes serve -l 4321 ."
+  }
+}

@@ -1,0 +1,14 @@
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
+
+[[redirects]]
+  from = "/data/_schema.json"
+  to = "/404"
+  status = 404
+  force = true
