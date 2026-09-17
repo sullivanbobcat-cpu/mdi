@@ -1,6 +1,7 @@
 // Pulls EIA weekly inventories, gas storage and spot prices; writes data/energy.json.
 // Run: EIA_API_KEY=yourkey node scripts/refresh-energy.mjs   (Node 18+; no dependencies)
 // Free key: https://www.eia.gov/opendata/register.php
+import './env.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 

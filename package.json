@@ -9,7 +9,8 @@
     "refresh": "node scripts/refresh.mjs",
     "refresh:energy": "node scripts/refresh-energy.mjs",
     "notes": "node scripts/build-notes.mjs",
-    "test": "node test/normalize.test.mjs && node test/energy.test.mjs && node test/notes.test.mjs",
+    "digest": "node scripts/digest.mjs",
+    "test": "node test/normalize.test.mjs && node test/energy.test.mjs && node test/notes.test.mjs && node test/digest.test.mjs",
     "serve": "npx --yes serve -l 4321 ."
   }
 }

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D1117">
 <title>Grain barge freight | Market Data Insider</title>
 <meta name="description" content="Weekly cost to move grain by barge on the Mississippi River System, with seasonal context. Built on USDA AgTransport data.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
@@ -217,7 +218,7 @@
   // Locks chart: last 52 weeks, stacked by lock. Hidden until movements data exists.
   if (!moves || !moves.weeks?.length) { $('locks-panel').hidden = true; return; }
   const recent = moves.weeks.slice(-52);
-  const palette = [css('--river'), css('--grain'), css('--down'), css('--up'), css('--muted')];
+  const palette = [css('--river'), css('--grain'), css('--muted'), css('--link')]; // categorical, never green/red
   new Chart($('locks-chart'), {
     type: 'bar',
     data: {

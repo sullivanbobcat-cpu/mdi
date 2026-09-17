@@ -18,6 +18,12 @@ Static HTML + Chart.js on Netlify. A GitHub Action (Tue–Fri) refreshes `data/r
 - `npm run notes`: compile notes locally
 - `npm run serve`: preview at http://localhost:4321
 
+## Weekly AI digest (local, private until you publish)
+1. Copy `.env.example` to `.env` and add `ANTHROPIC_API_KEY` (and `EIA_API_KEY`). `.env` is never committed.
+2. `git pull`, then `npm run digest`. It writes `drafts/YYYY-MM-DD-weekly-digest.md` plus the facts file it used. `drafts/` is never committed.
+3. The script rejects any number not in the facts file and any trading-advice language, retries once, and flags anything left with an UNVERIFIED-CONTENT block. The site build refuses to publish a note containing that block.
+4. Edit the draft, add your own read, move it into `notes/`, delete `draft: true`, commit, push.
+
 ## Writing a note
 Copy `notes/_template.md` to `notes/YYYY-MM-DD-short-title.md`, fill it in, delete the `draft: true` line, commit and push. It's live after the deploy finishes.
 

@@ -35,6 +35,7 @@ async function main() {
   for (const f of files) {
     const note = parseNote(f, await readFile(new URL(f, dir), 'utf8'));
     if (note.draft) { console.log(`  skip draft ${f}`); continue; }
+    if (note.body.includes('UNVERIFIED-CONTENT')) throw new Error(`${f}: still contains the UNVERIFIED-CONTENT warning from the digest checks. Fix the flagged issues and delete that block before publishing.`);
     notes.push(note);
   }
   notes.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
