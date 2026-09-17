@@ -1,6 +1,9 @@
 [build]
   publish = "."
-  command = ""
+  command = "node scripts/build-notes.mjs"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 [[headers]]
   for = "/data/*"
@@ -12,3 +15,8 @@
   to = "/404"
   status = 404
   force = true
+
+[[redirects]]
+  from = "/grain/*"
+  to = "/grain-freight/"
+  status = 301

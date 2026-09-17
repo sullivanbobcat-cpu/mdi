@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grain barge freight | Market Data Insider</title>
+<meta name="description" content="Weekly cost to move grain by barge on the Mississippi River System, with seasonal context. Built on USDA AgTransport data.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/">Market Data Insider</a>
+    <nav aria-label="Markets"><a href="/grain-freight/" aria-current="page">Grain freight</a><a href="/energy/">Energy</a><a href="/notes/">Notes</a></nav>
+    <span class="stamp" id="stamp">Loading latest USDA data</span>
+  </header>
+
+  <div class="notice" id="error" hidden></div>
+  <main id="main">
+    <section class="hero">
+      <div>
+        <h1 id="headline">What it costs to move a ton of grain down the river this week</h1>
+        <p id="hero-context"></p>
+        <p>Rates are spot quotes for downbound barge freight to the Gulf, reported weekly by USDA. Upper Mississippi reaches close in winter, so gaps there are normal.</p>
+      </div>
+      <ol class="strip" id="strip" aria-label="Barge rates by origin, north to south"></ol>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>This year against the seasonal pattern</h2>
+          <p class="lede" id="season-lede">Barge rates typically climb into harvest and peak in the fall.</p>
+        </div>
+        <label class="pick">Origin
+          <select id="season-loc"></select>
+        </label>
+      </div>
+      <div class="chart-box"><canvas id="season-chart" aria-label="Weekly barge rate by week of year"></canvas></div>
+    </section>
+
+    <section class="panel" id="locks-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Grain moving through the locks</h2>
+          <p class="lede" id="locks-lede">Weekly downbound grain tonnage at the last lock on each major tributary.</p>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="locks-chart" aria-label="Weekly downbound grain tons by lock"></canvas></div>
+    </section>
+
+    <section class="panel method">
+      <h2>How these numbers are built</h2>
+      <p>Barge freight on the inland waterways is quoted as a percent of the 1976 Waterways Freight Bureau tariff. Each origin has its own benchmark, so a 300% rate at Twin Cities costs more than a 300% rate at St. Louis. This page converts every quote to dollars per ton: percent of tariff ÷ 100 × the origin's benchmark.</p>
+      <p>The seasonal average uses the five prior calendar years, matched by ISO week. Lock tonnage sums all grains reported for each lock and week.</p>
+      <p>Sources: <a id="src-rates" href="https://agtransport.usda.gov/Barge/Downbound-Grain-Barge-Rates/deqi-uken">USDA AMS downbound grain barge rates</a> and <a id="src-locks" href="https://agtransport.usda.gov/Barge/Weekly-downbound-grain-barge-movements/t8wc-fscq">weekly downbound grain barge movements</a>.</p>
+    </section>
+  </main>
+
+
+  <footer>
+    <p>Commodity fundamentals from public data, built by Bobby Sullivan. Sources are named on each page.</p>
+    <p class="disclaimer">Personal project. Not affiliated with or endorsed by any employer. Nothing on this site is investment advice.</p>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="/assets/core.js"></script>
+<script>
+
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const usd = (v) => v == null ? '—' : `$${v.toFixed(2)}`;
+  const tons = (v) => v >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : `${Math.round(v / 1e3)}k`;
+  const fmtDate = (d) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  const DAY = 864e5;
+  const narrow = window.matchMedia('(max-width: 40rem)').matches;
+
+  function isoWeek(dstr) {
+    const t = new Date(dstr + 'T00:00:00Z');
+    const dow = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - dow);
+    const y0 = Date.UTC(t.getUTCFullYear(), 0, 1);
+    return { year: t.getUTCFullYear(), week: Math.ceil(((t - y0) / DAY + 1) / 7) };
+  }
+
+  const load = async (u) => {
+    const r = await fetch(u, { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`${u} returned ${r.status}`);
+    return r.json();
+  };
+  let rates, moves = null;
+  try {
+    rates = await load('/data/rates.json');
+    moves = await load('/data/movements.json').catch(() => null);
+  } catch (e) {
+    $('main').hidden = true;
+    $('stamp').textContent = 'No data loaded';
+    $('error').hidden = false;
+    $('error').textContent = `Data files are missing (${e.message}). The weekly refresh may not have run yet.`;
+    return;
+  }
+
+  const locs = rates.locations;
+  const allDates = Object.values(rates.series).flat().map((p) => p[0]).sort();
+  const asOf = allDates[allDates.length - 1];
+  $('stamp').textContent = `Rates for the week of ${fmtDate(asOf)}`;
+
+  // Seasonal lookup: key -> year -> week -> usd
+  const seasonal = {};
+  for (const l of locs) {
+    const m = (seasonal[l.key] = {});
+    for (const [d, , v] of rates.series[l.key]) {
+      const { year, week } = isoWeek(d);
+      (m[year] ||= {})[week] = v;
+    }
+  }
+  const curYear = isoWeek(asOf).year;
+  function avgFor(key, week) {
+    const vals = [];
+    for (let y = curYear - 5; y < curYear; y++) {
+      const v = seasonal[key][y]?.[week];
+      if (v != null) vals.push(v);
+    }
+    return vals.length >= 2 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  }
+
+  function snapshot(l) {
+    const s = rates.series[l.key];
+    const last = s[s.length - 1];
+    if (!last || (new Date(asOf) - new Date(last[0])) / DAY > 21) return { l, closed: true };
+    const prev = s[s.length - 2];
+    const wkChg = prev && (new Date(last[0]) - new Date(prev[0])) / DAY <= 10 ? last[2] - prev[2] : null;
+    const avg = avgFor(l.key, isoWeek(last[0]).week);
+    return { l, date: last[0], pct: last[1], usd: last[2], wkChg, avg };
+  }
+  const snaps = locs.map(snapshot);
+
+  // Strip map
+  const strip = $('strip');
+  let group = null, i = 0;
+  for (const s of snaps) {
+    if (s.l.group !== group) {
+      group = s.l.group;
+      const li = document.createElement('li');
+      li.className = 'reach';
+      li.textContent = group;
+      strip.append(li);
+    }
+    const li = document.createElement('li');
+    li.className = 'stop' + (s.l.key === 'stlouis' ? ' lead' : '') + (s.closed ? ' closed' : '');
+    li.style.setProperty('--i', i++);
+    if (s.closed) {
+      li.innerHTML = `<span class="name">${s.l.label}<small>No quote in the last three weeks</small></span><span class="usd">Seasonal gap</span><span class="chg"></span>`;
+    } else {
+      const dir = s.wkChg == null || Math.abs(s.wkChg) < 0.005 ? 'flat' : s.wkChg > 0 ? 'up' : 'down';
+      const chg = s.wkChg == null ? 'n/a' : dir === 'flat' ? 'unch' : `${s.wkChg > 0 ? '▲' : '▼'} ${Math.abs(s.wkChg).toFixed(2)}`;
+      li.innerHTML = `<span class="name">${s.l.label}<small>${s.pct}% of tariff</small></span><span class="usd">${usd(s.usd)}</span><span class="chg ${dir}" title="Week-over-week change, $/ton">${chg}</span>`;
+    }
+    strip.append(li);
+  }
+
+  // Headline anchored on St. Louis
+  const stl = snaps.find((s) => s.l.key === 'stlouis');
+  if (stl && !stl.closed) {
+    $('headline').innerHTML = `Barge freight from St. Louis to the Gulf costs <span class="fig">${usd(stl.usd)}</span> a ton this week`;
+    const parts = [];
+    if (stl.wkChg != null) parts.push(`That is ${Math.abs(stl.wkChg) < 0.005 ? 'unchanged' : `${stl.wkChg > 0 ? 'up' : 'down'} ${usd(Math.abs(stl.wkChg))}`} from the prior week`);
+    if (stl.avg != null) {
+      const diff = (stl.usd / stl.avg - 1) * 100;
+      parts.push(`<strong>${Math.abs(diff).toFixed(0)}% ${diff >= 0 ? 'above' : 'below'}</strong> the five-year average for this week (${usd(stl.avg)})`);
+    }
+    $('hero-context').innerHTML = parts.length ? parts.join(' and ') + '.' : '';
+  }
+
+  // Seasonal chart
+  Chart.defaults.font.family = css('--sans').split(',')[0].replace(/'/g, '') + ', system-ui, sans-serif';
+  Chart.defaults.color = css('--muted');
+  Chart.defaults.borderColor = css('--rule');
+  const sel = $('season-loc');
+  for (const l of locs) sel.add(new Option(l.label, l.key, false, l.key === 'stlouis'));
+  const weeks = Array.from({ length: 53 }, (_, k) => k + 1);
+  const seasonChart = new Chart($('season-chart'), {
+    type: 'line',
+    data: { labels: weeks.map((w) => `Wk ${w}`), datasets: [] },
+    options: {
+      maintainAspectRatio: false, spanGaps: 2, interaction: { mode: 'index', intersect: false },
+      scales: { y: { title: { display: true, text: '$ per ton' }, ticks: { callback: (v) => `$${v}` }, grid: { color: css('--rule') } },
+                x: { ticks: { maxTicksLimit: narrow ? 5 : 13, maxRotation: 0 }, grid: { display: false } } },
+      plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${usd(c.parsed.y)}` } }, legend: { labels: { boxWidth: 14 } } },
+      elements: { point: { radius: 0, hoverRadius: 4 } },
+    },
+  });
+  function drawSeason() {
+    const key = sel.value;
+    const row = (y) => weeks.map((w) => seasonal[key][y]?.[w] ?? null);
+    seasonChart.data.datasets = [
+      { label: `${curYear - 5}–${curYear - 1} average`, data: weeks.map((w) => avgFor(key, w)), borderColor: css('--muted'), borderDash: [5, 4], borderWidth: 2 },
+      { label: String(curYear - 1), data: row(curYear - 1), borderColor: css('--river'), borderWidth: 1.5 },
+      { label: String(curYear), data: row(curYear), borderColor: css('--grain'), borderWidth: 3 },
+    ];
+    seasonChart.update();
+    const s = snaps.find((x) => x.l.key === key);
+    $('season-lede').innerHTML = s.closed
+      ? `${s.l.label} has no recent quote, which usually means the reach is closed for winter.`
+      : s.avg != null
+        ? `${s.l.label} is at <strong>${usd(s.usd)}</strong> against a five-year average of ${usd(s.avg)} for the same week.`
+        : `${s.l.label} is at <strong>${usd(s.usd)}</strong>. Not enough history for a same-week average.`;
+  }
+  sel.addEventListener('change', drawSeason);
+  drawSeason();
+
+  // Locks chart: last 52 weeks, stacked by lock. Hidden until movements data exists.
+  if (!moves || !moves.weeks?.length) { $('locks-panel').hidden = true; return; }
+  const recent = moves.weeks.slice(-52);
+  const palette = [css('--river'), css('--grain'), css('--down'), css('--up'), css('--muted')];
+  new Chart($('locks-chart'), {
+    type: 'bar',
+    data: {
+      labels: recent.map((w) => fmtDate(w.d).replace(/, \d{4}$/, '')),
+      datasets: moves.locks.map((lock, k) => ({ label: lock, data: recent.map((w) => w.byLock[lock] ?? 0), backgroundColor: palette[k % palette.length] })),
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      scales: { x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: narrow ? 4 : 12, maxRotation: 0 } },
+                y: { stacked: true, title: { display: true, text: 'Tons' }, ticks: { callback: (v) => tons(v) }, grid: { color: css('--rule') } } },
+      plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${tons(c.parsed.y)} tons` } }, legend: { labels: { boxWidth: 14 } } },
+    },
+  });
+  const total = (w) => Object.values(w.byLock).reduce((a, b) => a + b, 0);
+  const lastWk = moves.weeks[moves.weeks.length - 1];
+  if (lastWk) {
+    const target = isoWeek(lastWk.d);
+    const yearAgo = moves.weeks.find((w) => { const x = isoWeek(w.d); return x.year === target.year - 1 && x.week === target.week; });
+    let text = `<strong>${tons(total(lastWk))} tons</strong> moved downbound in the week of ${fmtDate(lastWk.d)}`;
+    if (yearAgo && total(yearAgo) > 0) {
+      const diff = (total(lastWk) / total(yearAgo) - 1) * 100;
+      text += `, ${Math.abs(diff).toFixed(0)}% ${diff >= 0 ? 'more' : 'less'} than the same week last year`;
+    }
+    $('locks-lede').innerHTML = text + '.';
+  }
+})();
+
+</script>
+</body>
+</html>

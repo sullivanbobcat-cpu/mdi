@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notes | Market Data Insider</title>
+<meta name="description" content="Weekly notes on what moved in grain freight and energy fundamentals, and why.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/">Market Data Insider</a>
+    <nav aria-label="Markets"><a href="/grain-freight/">Grain freight</a><a href="/energy/">Energy</a><a href="/notes/" aria-current="page">Notes</a></nav>
+    <span class="stamp" id="stamp"></span>
+  </header>
+
+  <div class="notice" id="error" hidden></div>
+  <main id="main">
+    <section id="list-view" class="notes-list-view" hidden>
+      <h1 class="page-title">Weekly notes</h1>
+      <p class="page-lede">What moved in the numbers, and why.</p>
+      <ol class="note-list" id="note-list"></ol>
+      <p class="empty" id="empty" hidden>The first weekly note is on its way.</p>
+    </section>
+
+    <article id="note-view" class="note" hidden>
+      <p class="note-meta" id="note-meta"></p>
+      <h1 id="note-title"></h1>
+      <div class="prose" id="note-body"></div>
+      <p class="back"><a href="/notes/">All notes</a></p>
+    </article>
+  </main>
+
+  <footer>
+    <p>Commodity fundamentals from public data, built by Bobby Sullivan. Sources are named on each page.</p>
+    <p class="disclaimer">Personal project. Not affiliated with or endorsed by any employer. Nothing on this site is investment advice.</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="/assets/core.js"></script>
+<script>
+(async function () {
+  const { $, fmtDate } = MDI;
+  let data;
+  try {
+    data = await MDI.load('/data/notes.json');
+  } catch (e) {
+    MDI.showError('Notes are not available right now. Please try again shortly.');
+    return;
+  }
+  const notes = data.notes || [];
+  const meta = (n) => fmtDate(n.date) + (n.markets.length ? ' / ' + n.markets.join(', ') : '');
+  const slug = new URLSearchParams(location.search).get('n');
+
+  if (slug) {
+    const n = notes.find((x) => x.slug === slug);
+    if (!n) { MDI.showError('That note could not be found.'); return; }
+    document.title = `${n.title} | Market Data Insider`;
+    $('note-meta').textContent = meta(n);
+    $('note-title').textContent = n.title;
+    $('note-body').innerHTML = marked.parse(n.body);
+    $('note-view').hidden = false;
+    return;
+  }
+
+  $('list-view').hidden = false;
+  if (!notes.length) { $('empty').hidden = false; return; }
+  for (const n of notes) {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `/notes/?n=${encodeURIComponent(n.slug)}`;
+    a.textContent = n.title;
+    const m = document.createElement('p'); m.className = 'note-meta'; m.textContent = meta(n);
+    const s = document.createElement('p'); s.className = 'note-summary'; s.textContent = n.summary;
+    li.append(m, a, s);
+    $('note-list').append(li);
+  }
+})();
+</script>
+</body>
+</html>

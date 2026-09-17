@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U.S. oil and gas inventories | Market Data Insider</title>
+<meta name="description" content="Weekly U.S. crude oil stocks, natural gas storage and spot prices against the five-year range. Built on EIA data.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/">Market Data Insider</a>
+    <nav aria-label="Markets"><a href="/grain-freight/">Grain freight</a><a href="/energy/" aria-current="page">Energy</a><a href="/notes/">Notes</a></nav>
+    <span class="stamp" id="stamp">Loading latest EIA data</span>
+  </header>
+
+  <div class="notice" id="error" hidden></div>
+  <main id="main">
+    <section class="hero">
+      <div>
+        <h1 id="headline">U.S. oil and gas inventories this week</h1>
+        <p id="hero-context"></p>
+        <p>Inventories come from EIA's weekly petroleum report (Wednesdays) and natural gas storage report (Thursdays), each compared with the same week in the prior five years.</p>
+      </div>
+      <div class="tiles" id="tiles" aria-label="Latest readings"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div>
+        <h2>Crude oil stocks against the five-year range</h2>
+        <p class="lede" id="crude-lede">U.S. commercial crude oil stocks, excluding the Strategic Petroleum Reserve.</p>
+      </div></div>
+      <div class="chart-box"><canvas id="crude-chart" aria-label="Weekly U.S. commercial crude stocks by week of year"></canvas></div>
+    </section>
+
+    <section class="panel" id="gas-panel">
+      <div class="panel-head"><div>
+        <h2>Natural gas in storage against the five-year range</h2>
+        <p class="lede" id="gas-lede">Working gas in underground storage, Lower 48 states.</p>
+      </div></div>
+      <div class="chart-box"><canvas id="gas-chart" aria-label="Weekly Lower 48 working gas in storage by week of year"></canvas></div>
+    </section>
+
+    <section class="panel" id="prices-panel">
+      <div class="panel-head"><div>
+        <h2>Spot prices over the past year</h2>
+        <p class="lede" id="prices-lede">Daily spot prices for crude oil and natural gas.</p>
+      </div></div>
+      <div class="chart-box"><canvas id="prices-chart" aria-label="Daily WTI, Brent and Henry Hub spot prices"></canvas></div>
+    </section>
+
+    <section class="panel method">
+      <h2>How these numbers are built</h2>
+      <p>Inventory figures are EIA's weekly estimates: commercial crude oil stocks exclude the Strategic Petroleum Reserve, and natural gas storage is working gas in the Lower 48. The shaded band is the highest and lowest reading for each ISO week across the five prior calendar years, and the dashed line is their average.</p>
+      <p>Spot prices are the daily series published in EIA's open data API. EIA sources these from third-party price reporters, and other EIA products can show slightly different values for the same day, so treat them as reference prices rather than settlement prices.</p>
+      <p>Source: <a href="https://www.eia.gov/opendata/">U.S. Energy Information Administration open data</a>, including the <a href="https://www.eia.gov/petroleum/supply/weekly/">Weekly Petroleum Status Report</a> and the <a href="https://www.eia.gov/naturalgas/storage/">Weekly Natural Gas Storage Report</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Commodity fundamentals from public data, built by Bobby Sullivan. Sources are named on each page.</p>
+    <p class="disclaimer">Personal project. Not affiliated with or endorsed by any employer. Nothing on this site is investment advice.</p>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="/assets/core.js"></script>
+<script>
+(async function () {
+  const { $, css, narrow, fmtDate, fixed, signed, dirClass, load, byYearWeek, fiveYear, isoWeek, showError } = MDI;
+
+  let data;
+  try {
+    data = await load('/data/energy.json');
+  } catch (e) {
+    $('stamp').textContent = 'No data loaded';
+    showError(`Energy data isn't available yet (${e.message}).`);
+    return;
+  }
+  const S = data.series;
+  const last = (k, n = 1) => S[k]?.points[S[k].points.length - n] ?? null;
+  const toM = (v) => v / 1000; // thousand barrels -> million barrels
+
+  const crudeNow = last('crude'), crudePrev = last('crude', 2);
+  $('stamp').textContent = `EIA data through ${fmtDate(crudeNow[0])}`;
+
+  // Seasonal context
+  const ctx = (k) => {
+    const pts = S[k].points, [d, v] = pts[pts.length - 1];
+    const { year, week } = isoWeek(d);
+    return { d, v, year, week, m: byYearWeek(pts), stats: fiveYear(byYearWeek(pts), year, week) };
+  };
+  const crude = ctx('crude');
+  const gas = S.gas ? ctx('gas') : null;
+  const pctVs = (v, avg) => (avg ? (v / avg - 1) * 100 : null);
+  const aboveBelow = (p) => `${fixed(Math.abs(p), Math.abs(p) < 10 ? 1 : 0)}% ${p >= 0 ? 'above' : 'below'}`;
+
+  // Headline
+  const chg = toM(crudeNow[1] - crudePrev[1]);
+  $('headline').textContent = Math.abs(chg) < 0.05
+    ? `U.S. crude stocks were flat in the week ending ${fmtDate(crudeNow[0])}`
+    : `U.S. crude stocks ${chg < 0 ? 'drew' : 'built'} ${fixed(Math.abs(chg))} million barrels in the week ending ${fmtDate(crudeNow[0])}`;
+  const parts = [];
+  if (crude.stats) parts.push(`At ${fixed(toM(crude.v))} million barrels, commercial crude sits ${aboveBelow(pctVs(crude.v, crude.stats.avg))} the five-year average for this week`);
+  if (gas?.stats) {
+    const gPrev = last('gas', 2)[1];
+    const flow = gas.v - gPrev;
+    parts.push(`natural gas storage ${flow >= 0 ? 'rose' : 'fell'} ${fixed(Math.abs(flow), 0)} Bcf to ${fixed(gas.v, 0)} Bcf, ${aboveBelow(pctVs(gas.v, gas.stats.avg))} its five-year average`);
+  }
+  $('hero-context').textContent = parts.length ? parts.join(', and ') + '.' : '';
+
+  // Tiles
+  const tiles = [];
+  const tile = (label, value, unit, sub, cls = '') => tiles.push(`<div class="tile"><div class="label">${label}</div><div class="value">${value}<small>${unit}</small></div><div class="sub ${cls}">${sub}</div></div>`);
+  tile('Commercial crude stocks', fixed(toM(crudeNow[1])), 'M bbl', `${signed(chg)}M bbl on the week`, dirClass(chg, 0.05));
+  if (S.cushing) {
+    const c = last('cushing'), p = last('cushing', 2), d = toM(c[1] - p[1]);
+    tile('Cushing, OK stocks', fixed(toM(c[1])), 'M bbl', `${signed(d)}M bbl on the week`, dirClass(d, 0.05));
+  }
+  if (S.refutil) {
+    const c = last('refutil'), p = last('refutil', 2), d = c[1] - p[1];
+    tile('Refinery utilization', fixed(c[1]), '%', `${signed(d)} pts on the week`, dirClass(d, 0.05));
+  }
+  if (gas) {
+    const flow = gas.v - last('gas', 2)[1];
+    tile('Gas in storage', fixed(gas.v, 0), 'Bcf', `${flow >= 0 ? 'Injection' : 'Withdrawal'} of ${fixed(Math.abs(flow), 0)} Bcf`, dirClass(flow, 0.5));
+  }
+  const spotTile = (k, label, unit, dp) => {
+    if (!S[k]) return;
+    const c = last(k), p = last(k, 2), d = c[1] - p[1];
+    tile(label, `$${fixed(c[1], dp)}`, unit.split('/')[1] ? `/${unit.split('/')[1]}` : '', `${signed(d, dp)} ${unit} vs prior day, ${fmtDate(c[0], { month: 'short', day: 'numeric' })}`, dirClass(d, 0.005));
+  };
+  spotTile('wti', 'WTI spot', '$/bbl', 2);
+  spotTile('henryhub', 'Henry Hub spot', '$/MMBtu', 2);
+  $('tiles').innerHTML = tiles.join('');
+
+  // Seasonal band charts
+  MDI.chartDefaults();
+  const weeks = Array.from({ length: 53 }, (_, i) => i + 1);
+  function bandChart(canvas, c, scale, unitTitle, tick) {
+    const band = weeks.map((w) => fiveYear(c.m, c.year, w));
+    const row = (y) => weeks.map((w) => (c.m[y]?.[w] != null ? c.m[y][w] * scale : null));
+    const muted = css('--muted');
+    return new Chart($(canvas), {
+      type: 'line',
+      data: {
+        labels: weeks.map((w) => `Wk ${w}`),
+        datasets: [
+          { label: 'Five-year range', data: band.map((b) => (b ? b.max * scale : null)), borderWidth: 0, pointRadius: 0, fill: false, order: 10 },
+          { label: 'range-low', data: band.map((b) => (b ? b.min * scale : null)), borderWidth: 0, pointRadius: 0, fill: '-1', backgroundColor: css('--rule'), order: 11 },
+          { label: `${c.year - 5}–${c.year - 1} average`, data: band.map((b) => (b ? b.avg * scale : null)), borderColor: muted, borderDash: [5, 4], borderWidth: 2, order: 3 },
+          { label: String(c.year - 1), data: row(c.year - 1), borderColor: css('--river'), borderWidth: 1.5, order: 2 },
+          { label: String(c.year), data: row(c.year), borderColor: css('--grain'), borderWidth: 3, order: 1 },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false, spanGaps: 2, interaction: { mode: 'index', intersect: false },
+        elements: { point: { radius: 0, hoverRadius: 4 } },
+        scales: {
+          y: { title: { display: true, text: unitTitle }, ticks: { callback: tick }, grid: { color: css('--rule') } },
+          x: { ticks: { maxTicksLimit: narrow ? 5 : 13, maxRotation: 0 }, grid: { display: false } },
+        },
+        plugins: {
+          legend: { reverse: true, labels: { boxWidth: 14, filter: (item) => item.text !== 'range-low' } },
+          tooltip: {
+            filter: (item) => item.dataset.label !== 'range-low',
+            callbacks: { label: (i) => `${i.dataset.label === 'Five-year range' ? 'Five-year high' : i.dataset.label}: ${tick(i.parsed.y)}` },
+          },
+        },
+      },
+    });
+  }
+
+  const inRange = (c) => c.stats && c.v >= c.stats.min && c.v <= c.stats.max;
+  bandChart('crude-chart', crude, 1 / 1000, 'Million barrels', (v) => `${fixed(v, 0)}M`);
+  if (crude.stats) {
+    const diff = toM(crude.v - crude.stats.avg);
+    $('crude-lede').textContent = `${fixed(toM(crude.v))} million barrels, ${fixed(Math.abs(diff))} million ${diff >= 0 ? 'above' : 'below'} the average for week ${crude.week} and ${inRange(crude) ? 'inside' : 'outside'} the five-year range.`;
+  }
+  if (gas) {
+    bandChart('gas-chart', gas, 1, 'Bcf', (v) => `${fixed(v, 0)}`);
+    if (gas.stats) {
+      const diff = gas.v - gas.stats.avg;
+      $('gas-lede').textContent = `${fixed(gas.v, 0)} Bcf, ${fixed(Math.abs(diff), 0)} Bcf ${diff >= 0 ? 'above' : 'below'} the average for week ${gas.week} and ${inRange(gas) ? 'inside' : 'outside'} the five-year range.`;
+    }
+  } else {
+    $('gas-panel').hidden = true;
+  }
+
+  // Spot prices, trailing 12 months
+  if (S.wti && S.henryhub) {
+    const cutoff = new Date(Date.parse(last('wti')[0]) - 365 * MDI.DAY).toISOString().slice(0, 10);
+    const wti = S.wti.points.filter(([d]) => d >= cutoff);
+    const hh = new Map(S.henryhub.points.map(([d, v]) => [d, v]));
+    const brent = S.brent ? new Map(S.brent.points.map(([d, v]) => [d, v])) : null;
+    const datasets = [
+      { label: 'WTI ($/bbl)', data: wti.map(([, v]) => v), borderColor: css('--grain'), borderWidth: 2, yAxisID: 'y' },
+      { label: 'Henry Hub ($/MMBtu)', data: wti.map(([d]) => hh.get(d) ?? null), borderColor: css('--river'), borderWidth: 2, yAxisID: 'y1' },
+    ];
+    if (brent) datasets.splice(1, 0, { label: 'Brent ($/bbl)', data: wti.map(([d]) => brent.get(d) ?? null), borderColor: css('--muted'), borderWidth: 1.5, borderDash: [4, 3], yAxisID: 'y' });
+    new Chart($('prices-chart'), {
+      type: 'line',
+      data: { labels: wti.map(([d]) => fmtDate(d, { month: 'short', day: 'numeric' })), datasets },
+      options: {
+        maintainAspectRatio: false, spanGaps: true, interaction: { mode: 'index', intersect: false },
+        elements: { point: { radius: 0, hoverRadius: 3 } },
+        scales: {
+          y: { position: 'left', title: { display: true, text: 'Crude, $/bbl' }, ticks: { callback: (v) => `$${v}` }, grid: { color: css('--rule') } },
+          y1: { position: 'right', title: { display: true, text: 'Gas, $/MMBtu' }, ticks: { callback: (v) => `$${fixed(v, 2)}` }, grid: { display: false } },
+          x: { ticks: { maxTicksLimit: narrow ? 4 : 12, maxRotation: 0 }, grid: { display: false } },
+        },
+        plugins: { legend: { labels: { boxWidth: 14 } } },
+      },
+    });
+    const w0 = wti[0][1], w1 = wti[wti.length - 1][1];
+    $('prices-lede').textContent = `WTI is $${fixed(w1, 2)}, ${signed(((w1 / w0) - 1) * 100, 0)}% over the past year. Henry Hub is $${fixed(last('henryhub')[1], 2)} per MMBtu.`;
+  } else {
+    $('prices-panel').hidden = true;
+  }
+})();
+
+</script>
+</body>
+</html>

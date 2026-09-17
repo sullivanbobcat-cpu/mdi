@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { normalizeRates, normalizeMovements } from '../scripts/refresh.mjs';
+import { normalizeRates, normalizeMovements, inferSchema } from '../scripts/refresh.mjs';
 
 const longSchema = [
   { field: 'date', name: 'Date', type: 'calendar_date' },
@@ -35,4 +35,9 @@ const m = normalizeMovements(mSchema, [
   { week: '2026-09-05', lock: 'Ohio Olmstead', commodity: 'Corn', tons: '50000' },
 ]);
 assert.deepEqual(m.weeks, [{ d: '2026-09-05', byLock: { 'Miss Locks 27': 500000, 'Ohio Olmstead': 50000 } }]);
+const inferred = inferSchema([
+  { week: '2026-09-08T00:00:00.000', location: 'St. Louis', rate: '250', ':id': 'x' },
+  { week: '2026-09-15T00:00:00.000', location: 'Cincinnati', rate: '281.5' },
+]);
+assert.deepEqual(inferred.map((c) => c.type), ['calendar_date', 'text', 'number']);
 console.log('all normalize tests pass');

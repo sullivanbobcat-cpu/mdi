@@ -1,8 +1,8 @@
-name: Refresh USDA barge data
+name: Refresh market data
 
 on:
   schedule:
-    - cron: "0 14 * * 2-5"
+    - cron: "0 16 * * 2-5"   # noon ET (11am in winter) Tue–Fri, after EIA's 10:30 releases
   workflow_dispatch:
 
 permissions:
@@ -17,9 +17,15 @@ jobs:
         with:
           node-version: 22
       - run: npm test
-      - run: npm run refresh
+      - name: Grain freight (USDA)
+        run: npm run refresh
         env:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+      - name: Energy (EIA)
+        run: npm run refresh:energy
+        continue-on-error: true
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
       - name: Commit if changed
         run: |
           git config user.name "mdi-bot"

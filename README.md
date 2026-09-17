@@ -1,20 +1,29 @@
 # marketdatainsider.com
 
-Weekly Mississippi River System grain barge freight, converted to $/ton, with seasonal context and lock traffic.
+Weekly commodity fundamentals, built from public data.
 
-## Stack
-Static HTML + Chart.js on Netlify. A GitHub Action pulls USDA AgTransport data (Tue–Fri) and commits JSON to `data/`; each commit redeploys the site.
+## Pages
+- `/` home: this week's headline numbers and the latest note
+- `/grain-freight/` Mississippi River System barge rates (USDA AgTransport)
+- `/energy/` crude oil and natural gas inventories, spot prices (EIA)
+- `/notes/` weekly write-ups
 
-## First run (do this before anything else)
-1. `npm test` — normalizer unit tests.
-2. `npm run refresh` — hits the live USDA API and writes `data/rates.json`, `data/movements.json`, `data/_schema.json`.
-3. Open `data/_schema.json` and confirm the rate column is **percent of tariff** (values mostly 100–1500). The script throws if it isn't.
-4. Spot-check one St. Louis week against the latest USDA Grain Transportation Report.
-5. `npm run serve` and open http://localhost:4321.
+## How it runs
+Static HTML + Chart.js on Netlify. A GitHub Action (Tue–Fri) refreshes `data/rates.json` and `data/energy.json` and commits them. Netlify's build step compiles `notes/*.md` into `data/notes.json` on every deploy.
 
-## Datasets
-- Rates: https://agtransport.usda.gov/d/deqi-uken
-- Lock movements: https://agtransport.usda.gov/d/t8wc-fscq
+## Commands
+- `npm test`: unit tests
+- `npm run refresh`: USDA barge rates
+- `EIA_API_KEY=... npm run refresh:energy`: EIA energy data (skips if no key)
+- `npm run notes`: compile notes locally
+- `npm run serve`: preview at http://localhost:4321
 
-## Conversion
-$/ton = pct_of_tariff / 100 × benchmark. Benchmarks ($/ton): Twin Cities 6.19, Mid-Miss 5.32, Illinois 4.64, St. Louis 3.99, Cincinnati 4.69, Lower Ohio 4.46, Cairo-Memphis 3.14.
+## Writing a note
+Copy `notes/_template.md` to `notes/YYYY-MM-DD-short-title.md`, fill it in, delete the `draft: true` line, commit and push. It's live after the deploy finishes.
+
+## Secrets (GitHub → Settings → Secrets and variables → Actions)
+- `EIA_API_KEY` (required for energy): free at https://www.eia.gov/opendata/register.php
+- `SOCRATA_APP_TOKEN` (optional)
+
+## Rules
+Public data only. No exchange futures prices. Name every source. Personal project, not affiliated with any employer, not investment advice.
