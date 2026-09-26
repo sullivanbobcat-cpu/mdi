@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D1117">
+<title>Event contract settlement comparison | Market Data Insider</title>
+<meta name="description" content="How Kalshi, Polymarket US, Polymarket International, and CME define settlement, handle ambiguity, and resolve disputes on the same event contracts.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+.table-wrap { overflow-x: auto; margin: 0 0 1.25rem; border: 1px solid var(--rule); border-radius: 4px; }
+.compare { border-collapse: collapse; width: 100%; min-width: 44rem; font-size: .9rem; }
+.compare th, .compare td { border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); padding: .5rem .75rem; vertical-align: top; text-align: left; line-height: 1.45; }
+.compare th:last-child, .compare td:last-child { border-right: none; }
+.compare thead tr { background: var(--surface); }
+.compare thead th { font: 600 .875rem/1.2 var(--cond); color: var(--muted); }
+.compare thead th:not(:first-child) { color: var(--ink); }
+.compare tbody th { font-size: .8125rem; font-weight: 500; color: var(--muted); white-space: nowrap; background: var(--surface); min-width: 9.5rem; }
+.compare td { color: var(--ink); }
+.not-listed { color: var(--muted); font-style: italic; text-align: center; vertical-align: middle; }
+.diverge { padding: 1rem 1.25rem; background: var(--surface); border-radius: 4px; border-left: 3px solid var(--grain); margin: 0; }
+.diverge p { margin: 0; font-size: .9375rem; }
+.rating { font: 700 1em var(--cond); }
+.rating.low  { color: var(--up); }
+.rating.med  { color: var(--grain); }
+.rating.high { color: var(--down); }
+.venue-head { font: 700 .875rem/1.2 var(--cond); display: block; color: var(--grain); margin-bottom: .2rem; }
+.compare td a { color: var(--link); word-break: break-word; }
+.spread-table { border-collapse: collapse; margin: 1rem 0; font-size: .9375rem; }
+.spread-table th, .spread-table td { border-bottom: 1px solid var(--rule); padding: .375rem .875rem .375rem 0; text-align: left; }
+.spread-table th { font-weight: 600; color: var(--muted); font-size: .875rem; }
+.spread-table .gain { color: var(--up); }
+.spread-table .loss { color: var(--down); }
+.case-callout { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--down); border-radius: 4px; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: .9375rem; }
+.case-callout strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/">Market Data Insider</a>
+    <nav aria-label="Markets"><a href="/grain-freight/">Grain freight</a><a href="/energy/">Energy</a><a href="/notes/">Notes</a><a href="/event-contracts/" aria-current="page">Event contracts</a></nav>
+    <span class="stamp" id="stamp"></span>
+  </header>
+
+  <main id="main">
+    <section class="hero" style="grid-template-columns: 1fr; padding-bottom: 1rem;">
+      <div>
+        <h1 class="page-title" style="margin-top: 2.5rem;">Event contract settlement comparison</h1>
+        <p class="page-lede">How Kalshi, Polymarket US (DCM), Polymarket International, and CME define settlement, handle ambiguous outcomes, and resolve disputes on the same events&mdash;pulled from each venue&rsquo;s published rulebook.</p>
+        <p style="color: var(--muted); font-size: .9375rem; max-width: 44rem;">Each table covers one contract. Fields marked <em>Not found in published rules</em> were not present in the rulebook or contract specification at the time of research. Data is hand-curated and not auto-refreshed; see the last-verified date in each table.</p>
+      </div>
+    </section>
+
+    <!-- Contract 1: Senate 2026 -->
+    <section class="panel" id="senate-2026">
+      <div class="panel-head">
+        <div>
+          <h2>Senate control after the 2026 midterms</h2>
+          <p class="lede">Resolution event: November 3, 2026 &mdash; which party holds a majority of U.S. Senate seats after the midterm elections?</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="compare" aria-label="Senate control 2026 settlement comparison">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Kalshi</th>
+              <th scope="col">Polymarket US (DCM)</th>
+              <th scope="col">Polymarket Intl.</th>
+              <th scope="col">CME</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Contract / link</th>
+              <td><a href="https://kalshi.com/markets/controls/senate-winner/controls-2026">Which party will win the U.S. Senate?</a></td>
+              <td><a href="https://polymarket.us/event/usse-midterms-2026-11-03">U.S. Senate Midterm Winner</a></td>
+              <td><a href="https://polymarket.com/event/which-party-will-win-the-senate-in-2026">Which party will win the Senate in 2026?</a></td>
+              <td><a href="https://www.cmegroup.com/notices/market-regulation/2026/08/msn08-26-26c.html">Senate Control 2026 Event Contract Swap</a><br><small style="color:var(--muted)">Exact title not confirmed in published rules; link is listing notice</small></td>
+            </tr>
+            <tr>
+              <th scope="row">Listing entity</th>
+              <td>KalshiEX LLC (CFTC-designated contract market)</td>
+              <td>QCX LLC d/b/a Polymarket US (CFTC-designated contract market)</td>
+              <td>Polymarket (not CFTC-regulated; blockchain oracle)</td>
+              <td>Chicago Mercantile Exchange Inc. (CFTC-designated contract market)</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution source</th>
+              <td>Official midterm election results</td>
+              <td>Not found in published rules for this contract</td>
+              <td>Not found in published rules; rules section not accessible in page content</td>
+              <td>Official election results as determined by the Exchange</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution trigger / timing</th>
+              <td>Party holding a majority of U.S. Senate seats following November 3, 2026 elections</td>
+              <td>Settles YES if Democratic Party wins control of the U.S. Senate in the 2026 midterms</td>
+              <td>Party controlling the majority of U.S. Senate seats; resolves on or around November 3, 2026</td>
+              <td>Party holding a majority of U.S. Senate seats following November 3, 2026 elections</td>
+            </tr>
+            <tr>
+              <th scope="row">Delay / revision handling</th>
+              <td>Not found in published rules for this contract</td>
+              <td>Rule 10.3(b): Company may adjust Expiration Date if data is delayed, event is rescheduled, or circumstances affect reliability of outcome determination</td>
+              <td>Not found in published rules for this contract</td>
+              <td>Rule 2203.A: if event is delayed, rescheduled, or cancelled before Termination of Trading, Final Settlement deferred until Contingency Expiration; if still unresolved, Exchange makes Occurrence Determination</td>
+            </tr>
+            <tr>
+              <th scope="row">Ambiguity / cancellation clause</th>
+              <td>Rule 6.3(c): if outcome is unresolvable, settles at last-traded price prior to circumstances becoming known; Outcome Review Committee may set a different fair settlement price if no last-traded price represents a fair settlement</td>
+              <td>Rule 10.3: Company may modify contract terms at any time; &ldquo;Company has full discretion in reviewing markets. Determinations made by the Company are final.&rdquo;</td>
+              <td>Not found in published rules; UMA protocol dispute mechanism applies</td>
+              <td>Not found in published rules for this specific contract</td>
+            </tr>
+            <tr>
+              <th scope="row">Who decides / appeal path</th>
+              <td>Outcome Review Committee (ORC); &ldquo;determinations are final and not subject to review&rdquo;</td>
+              <td>CEO, CCO, COO, or Head of Markets (Rule 10.4); determinations final; disputes via binding arbitration (New York, NY)</td>
+              <td>Decentralized UMA oracle; UMA token holders vote on disputed outcomes</td>
+              <td>Exchange makes Occurrence Determination; appeal process not found in published rules</td>
+            </tr>
+            <tr>
+              <th scope="row">Last verified</th>
+              <td>2026-09-26</td>
+              <td>2026-09-26</td>
+              <td>2026-09-26</td>
+              <td>2026-09-26</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="diverge">
+        <p><strong>Divergence risk: <span class="rating med">Medium</span></strong> &mdash; A contested result, recount, or legal challenge extending beyond each venue&rsquo;s settlement window could force venue-specific resolution procedures. Kalshi&rsquo;s Outcome Review Committee would invoke its last-traded-price provision under Rule 6.3(c); Polymarket US exercises &ldquo;full discretion&rdquo; under Rule 10.4. CME&rsquo;s Contingency Expiration mechanism provides a defined deadline, but the determination criteria applied after that deadline are not detailed in published contract rules. Senate seating can also be delayed when special elections or certification challenges postpone the final declared majority.</p>
+      </div>
+    </section>
+
+    <!-- Contract 2: Government Shutdown Dec 2026 -->
+    <section class="panel" id="shutdown-dec-2026">
+      <div class="panel-head">
+        <div>
+          <h2>U.S. government shutdown at the December 2026 funding deadline</h2>
+          <p class="lede">Resolution event: December 12, 2026 &mdash; does a government shutdown begin on or continue through the continuing resolution deadline?</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="compare" aria-label="December 2026 government shutdown settlement comparison">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Kalshi</th>
+              <th scope="col">Polymarket US (DCM)</th>
+              <th scope="col">Polymarket Intl.</th>
+              <th scope="col">CME</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Contract / link</th>
+              <td><a href="https://kalshi.com/markets/kxgovtshutdown/will-the-government-shut-down/kxgovtshutdown-26dec12">Government shutdown on Dec 12, 2026?</a></td>
+              <td class="not-listed">Not listed<br><small>Standalone December 12 shutdown contract not confirmed in published Polymarket US listings as of 2026-09-26</small></td>
+              <td><a href="https://polymarket.com/event/another-us-government-shutdown-house-winner-2026">Another US government shutdown &amp; House Winner 2026?</a><br><small style="color:var(--muted)">Bundled outcome (shutdown + House winner); not a standalone Dec 12 contract</small></td>
+              <td class="not-listed">Not listed<br><small>CME event contract swaps cover elections; no shutdown contract confirmed in published listings as of 2026-09-26</small></td>
+            </tr>
+            <tr>
+              <th scope="row">Listing entity</th>
+              <td>KalshiEX LLC (CFTC-designated contract market)</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Polymarket (not CFTC-regulated; blockchain oracle)</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution source</th>
+              <td>Lapse in federal appropriations causing furlough of non-essential government employees; brief funding gaps without furloughs do not trigger resolution</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Not found in published rules for this contract</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution trigger / timing</th>
+              <td>A government shutdown begins on or continues through December 12, 2026</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Combined condition: an additional U.S. government shutdown AND a specific House election winner in 2026; not a standalone shutdown deadline contract</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Delay / revision handling</th>
+              <td>Not found in published rules for this contract</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Not found in published rules for this contract</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Ambiguity / cancellation clause</th>
+              <td>Rule 6.3(c): if outcome is unresolvable, settles at last-traded price; &ldquo;brief funding gaps that do not result in furloughs typically do not trigger resolution&rdquo;</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Not found in published rules; UMA protocol dispute mechanism applies</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Who decides / appeal path</th>
+              <td>Outcome Review Committee (ORC); determinations are final and not subject to review</td>
+              <td class="not-listed">&mdash;</td>
+              <td>Decentralized UMA oracle; UMA token holders vote on disputed outcomes</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Last verified</th>
+              <td>2026-09-26</td>
+              <td class="not-listed">&mdash;</td>
+              <td>2026-09-26</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="diverge">
+        <p><strong>Divergence risk: <span class="rating high">High</span></strong> &mdash; Each venue defines &ldquo;shutdown&rdquo; differently. Kalshi requires an actual furlough of non-essential federal workers, explicitly excluding brief funding gaps that do not result in furloughs. Polymarket International&rsquo;s nearest listed contract bundles the shutdown outcome with the House election winner, making it a fundamentally different binary. CME lists no comparable contract. A short-lived funding lapse that triggers Kalshi&rsquo;s furlough definition but falls outside Polymarket&rsquo;s bundled condition&mdash;or a brief gap that avoids furloughs entirely&mdash;would produce divergent settlements across every active venue. This definitional gap produced inconsistent resolution signals across venues during the January 2026 funding episode.</p>
+      </div>
+    </section>
+
+    <!-- Contract 3: FOMC Oct 2026 -->
+    <section class="panel" id="fomc-oct-2026">
+      <div class="panel-head">
+        <div>
+          <h2>Federal Reserve decision at the October 2026 FOMC meeting</h2>
+          <p class="lede">Resolution event: October 27&ndash;28, 2026 &mdash; what does the FOMC decide on the federal funds rate?</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="compare" aria-label="October 2026 FOMC decision settlement comparison">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Kalshi</th>
+              <th scope="col">Polymarket US (DCM)</th>
+              <th scope="col">Polymarket Intl.</th>
+              <th scope="col">CME</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Contract / link</th>
+              <td><a href="https://kalshi.com/markets/kxfeddecision/fed-meeting/kxfeddecision-26oct">Fed decision in October?</a></td>
+              <td><a href="https://polymarket.us/event/usfed-fomc-2026-10-28">Fed Decision in October</a></td>
+              <td><a href="https://polymarket.com/event/fed-decision-in-october-20260617190323537">Fed Decision in October?</a></td>
+              <td class="not-listed">Not listed as a binary event contract<br><small>CME lists 30-Day Fed Funds Futures (ticker: FF)&mdash;a traditional interest rate futures contract, not a binary cut/hold/hike outcome. <a href="https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.html">CME Fed Funds Futures</a></small></td>
+            </tr>
+            <tr>
+              <th scope="row">Listing entity</th>
+              <td>KalshiEX LLC (CFTC-designated contract market)</td>
+              <td>QCX LLC d/b/a Polymarket US (CFTC-designated contract market)</td>
+              <td>Polymarket (not CFTC-regulated; blockchain oracle)</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution source</th>
+              <td>FOMC meeting statement / Federal Reserve federal funds rate announcement</td>
+              <td>FOMC meeting statement</td>
+              <td>FOMC meeting statement</td>
+              <td class="not-listed">Final settlement: arithmetic average of daily effective federal funds rate for the delivery month (different instrument type)</td>
+            </tr>
+            <tr>
+              <th scope="row">Resolution trigger / timing</th>
+              <td>FOMC rate decision announced at the October 27&ndash;28, 2026 meeting</td>
+              <td>FOMC rate decision at the October 27&ndash;28, 2026 meeting</td>
+              <td>FOMC rate decision at the October 2026 meeting</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Delay / revision handling</th>
+              <td>Not found in published rules for this contract; Rule 6.3(c) covers unresolvable outcomes</td>
+              <td>Rule 10.3(b): Company may adjust Expiration Date if meeting is rescheduled or data is delayed</td>
+              <td>Not found in published rules for this contract</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Ambiguity / cancellation clause</th>
+              <td>Rule 6.3(c): if outcome is unresolvable, settles at last-traded price prior to circumstances becoming known</td>
+              <td>Rule 10.3: Company may modify contract terms at any time; &ldquo;Company has full discretion in reviewing markets. Determinations made by the Company are final.&rdquo;</td>
+              <td>Not found in published rules; UMA protocol dispute mechanism applies</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Who decides / appeal path</th>
+              <td>Outcome Review Committee (ORC); determinations are final and not subject to review</td>
+              <td>CEO, CCO, COO, or Head of Markets (Rule 10.4); determinations final; disputes via binding arbitration (New York, NY)</td>
+              <td>Decentralized UMA oracle; UMA token holders vote on disputed outcomes</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+            <tr>
+              <th scope="row">Last verified</th>
+              <td>2026-09-26</td>
+              <td>2026-09-26</td>
+              <td>2026-09-26</td>
+              <td class="not-listed">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="diverge">
+        <p><strong>Divergence risk: <span class="rating low">Low</span></strong> &mdash; The Federal Reserve&rsquo;s rate announcement is immediate and unambiguous; all binary event contract venues resolve against the same FOMC statement, minimizing definitional risk. The primary residual exposure is timing: if a meeting is unexpectedly postponed, Polymarket US&rsquo;s Rule 10.3(b) grants the Company discretion to adjust the expiration date, while Kalshi&rsquo;s ORC would make an equivalent determination, with no guarantee of identical timing. CME&rsquo;s 30-Day Federal Funds Futures are a different instrument&mdash;settling against the realized monthly average rate rather than a cut/hold/hike binary&mdash;and cannot be compared directly.</p>
+      </div>
+    </section>
+
+    <!-- Case study -->
+    <section class="panel" id="case-study">
+      <div class="panel-head">
+        <div>
+          <h2>Case study: Cardi&nbsp;B at Super Bowl&nbsp;LX (February 2026)</h2>
+          <p class="lede">A split resolution on the same event produced a 74% gap in settlement value between venues.</p>
+        </div>
+      </div>
+      <p>An event contract on whether Cardi&nbsp;B would perform at Super Bowl&nbsp;LX traded on both Kalshi and Polymarket. When Cardi&nbsp;B made a guest appearance during the halftime show, the question of whether the appearance met each contract&rsquo;s definition of a qualifying performance was disputed across venues.</p>
+
+      <div class="case-callout">
+        <p><strong>Kalshi</strong> &mdash; Declared the outcome unresolvable under Rule 6.3(c). Settled at last-traded price: YES at <strong>$0.26</strong>, NO at $0.74.</p>
+        <p style="margin: .5rem 0 0;"><strong>Polymarket</strong> &mdash; Resolved <strong>YES at $1.00</strong>. The appearance was treated as a qualifying performance.</p>
+      </div>
+
+      <p>The table below illustrates the settlement gap for a holder of 100 YES contracts at a last-traded price of $0.65 each (total cost: $65.00).</p>
+
+      <table class="spread-table" aria-label="Illustrative settlement comparison for Cardi B Super Bowl contract">
+        <thead>
+          <tr>
+            <th>Venue</th>
+            <th>Settlement per contract</th>
+            <th>Total received (100 contracts)</th>
+            <th>Net gain / loss</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Polymarket</td>
+            <td>$1.00</td>
+            <td>$100.00</td>
+            <td class="gain">+$35.00&nbsp;(+53.8%)</td>
+          </tr>
+          <tr>
+            <td>Kalshi</td>
+            <td>$0.26</td>
+            <td>$26.00</td>
+            <td class="loss">&minus;$39.00&nbsp;(&minus;60.0%)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The $0.74 gap between a $1.00 payout and a $0.26 payout represents a <strong>74% shortfall</strong> relative to full settlement for Kalshi YES holders&mdash;on a contract where both venues agreed on the underlying event.</p>
+    </section>
+
+    <!-- Methodology -->
+    <section class="panel method">
+      <h2>How these tables are built</h2>
+      <p>Each row is drawn directly from the venue&rsquo;s published rulebook or contract specification, paraphrased with one short quotation where the exact wording is material. Fields marked <em>Not found in published rules</em> were absent from the rulebook, contract spec, and market description page at the time of research (verified 2026-09-26). Sources consulted: KalshiEX LLC Rulebook (CFTC filings); Polymarket US Rulebook (QCX LLC, July 2, 2026 edition); CME Chapter&nbsp;22 Event Contract Swaps and related CFTC submissions; Polymarket International market pages.</p>
+      <p>Divergence ratings (Low / Medium / High) are editorial judgments based on how far the venues&rsquo; definitions and procedures could produce different settlement prices on the same real-world outcome. <strong>This page is a proof-of-concept research artifact and is not updated automatically.</strong> Rules change; verify against current rulebooks before relying on any field.</p>
+      <p class="disclaimer" style="margin-top: 1rem;">Personal project. Not affiliated with or endorsed by any employer, venue, or counterparty. Nothing on this site is investment advice. Cross-venue positions involve risk of divergent settlement.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Commodity fundamentals from public data. Sources are named on each page.</p>
+    <p class="disclaimer">Personal project. Not affiliated with or endorsed by any employer. Nothing on this site is investment advice.</p>
+  </footer>
+</div>
+<script src="/assets/core.js"></script>
+</body>
+</html>

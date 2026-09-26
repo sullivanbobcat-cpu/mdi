@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "description": "Cross-venue settlement comparison for selected event contracts on Kalshi, Polymarket US (DCM), Polymarket International, and CME. Hand-curated from published rulebooks; not auto-refreshed.",
+    "last_updated": "2026-09-26"
+  },
+  "contracts": [
+    {
+      "id": "senate-2026",
+      "title": "Who will control the U.S. Senate after the 2026 midterms?",
+      "resolution_date": "2026-11-03",
+      "divergence_rating": "Medium",
+      "divergence_scenario": "A contested result, recount, or legal challenge extending beyond each venue\u2019s settlement window could force venue-specific resolution procedures. Kalshi\u2019s Outcome Review Committee would invoke its last-traded-price provision under Rule 6.3(c); Polymarket US exercises \u201cfull discretion\u201d under Rule 10.4. CME\u2019s Contingency Expiration mechanism provides a defined deadline, but the determination criteria applied after that deadline are not detailed in published contract rules. Senate seating can also be delayed when special elections or certification challenges postpone the final declared majority.",
+      "venues": {
+        "kalshi": {
+          "not_listed": false,
+          "contract_title": "Which party will win the U.S. Senate?",
+          "url": "https://kalshi.com/markets/controls/senate-winner/controls-2026",
+          "listing_entity": "KalshiEX LLC (CFTC-designated contract market)",
+          "resolution_source": "Official midterm election results",
+          "resolution_trigger": "Party holding a majority of U.S. Senate seats following the November 3, 2026 elections",
+          "delay_revision": "Not found in published rules for this contract",
+          "ambiguity_cancellation": "Rule 6.3(c): if outcome is unresolvable, settles at last-traded price prior to circumstances becoming known; Outcome Review Committee may determine a different fair settlement price if no last-traded price represents a fair settlement",
+          "decision_path": "Outcome Review Committee (ORC); \u201cdeterminations of Kalshi and the Outcome Review Committee under this Rule are final and not subject to review\u201d",
+          "last_verified": "2026-09-26"
+        },
+        "polymarket_us": {
+          "not_listed": false,
+          "contract_title": "U.S. Senate Midterm Winner",
+          "url": "https://polymarket.us/event/usse-midterms-2026-11-03",
+          "listing_entity": "QCX LLC d/b/a Polymarket US (CFTC-designated contract market)",
+          "resolution_source": "Not found in published rules for this contract",
+          "resolution_trigger": "Settles YES if Democratic Party wins control of the U.S. Senate in the 2026 midterms",
+          "delay_revision": "Rule 10.3(b): Company may adjust Expiration Date if data is delayed, event is rescheduled, or circumstances affect reliability of the outcome determination",
+          "ambiguity_cancellation": "Rule 10.3: Company may modify contract terms at any time if a material impact on reliability or transparency is identified; \u201cCompany has full discretion in reviewing markets. Determinations made by the Company are final.\u201d",
+          "decision_path": "CEO, CCO, COO, or Head of Markets (Rule 10.4); determinations final; disputes resolved by binding arbitration in New York, NY (Rule 9.1/9.2)",
+          "last_verified": "2026-09-26"
+        },
+        "polymarket_intl": {
+          "not_listed": false,
+          "contract_title": "Which party will win the Senate in 2026?",
+          "url": "https://polymarket.com/event/which-party-will-win-the-senate-in-2026",
+          "listing_entity": "Polymarket (not CFTC-regulated; blockchain-based oracle resolution)",
+          "resolution_source": "Not found in published rules for this contract; resolution rules section not accessible in published page content",
+          "resolution_trigger": "Party controlling the majority of U.S. Senate seats following the 2026 midterms; resolves on or around November 3, 2026",
+          "delay_revision": "Not found in published rules for this contract",
+          "ambiguity_cancellation": "Not found in published rules for this contract; UMA protocol dispute mechanism applies",
+          "decision_path": "Decentralized UMA oracle; UMA token holders vote on disputed outcomes",
+          "last_verified": "2026-09-26"
+        },
+        "cme": {
+          "not_listed": false,
+          "contract_title": "Senate Control 2026 Event Contract Swap (exact title not confirmed in published rules)",
+          "url": "https://www.cmegroup.com/notices/market-regulation/2026/08/msn08-26-26c.html",
+          "listing_entity": "Chicago Mercantile Exchange Inc. (CFTC-designated contract market)",
+          "resolution_source": "Official election results as determined by the Exchange",
+          "resolution_trigger": "Party holding a majority of U.S. Senate seats following November 3, 2026 elections",
+          "delay_revision": "Rule 2203.A: if the event is delayed, rescheduled, or cancelled before Termination of Trading, Final Settlement determination is deferred until the Contingency Expiration; if still unresolved at Contingency Expiration, Exchange makes Occurrence Determination",
+          "ambiguity_cancellation": "Not found in published rules for this specific contract",
+          "decision_path": "Exchange makes Occurrence Determination; appeal process not found in published rules",
+          "last_verified": "2026-09-26"
+        }
+      }
+    },
+    {
+      "id": "shutdown-dec-2026",
+      "title": "Will there be a U.S. government shutdown at the December 2026 funding deadline?",
+      "resolution_date": "2026-12-12",
+      "divergence_rating": "High",
+      "divergence_scenario": "Each venue defines \u201cshutdown\u201d differently. Kalshi requires an actual furlough of non-essential federal workers, explicitly excluding brief funding gaps that do not result in furloughs. Polymarket International\u2019s nearest listed contract bundles the shutdown outcome with the House election winner, making it a fundamentally different binary. CME lists no comparable contract. A short-lived funding lapse that triggers Kalshi\u2019s furlough definition but falls outside Polymarket\u2019s bundled condition\u2014or a brief gap that avoids furloughs entirely\u2014would produce divergent settlements across every active venue. This definitional gap produced inconsistent resolution signals across venues during the January 2026 funding episode.",
+      "venues": {
+        "kalshi": {
+          "not_listed": false,
+          "contract_title": "Government shutdown on Dec 12, 2026?",
+          "url": "https://kalshi.com/markets/kxgovtshutdown/will-the-government-shut-down/kxgovtshutdown-26dec12",
+          "listing_entity": "KalshiEX LLC (CFTC-designated contract market)",
+          "resolution_source": "Lapse in federal appropriations causing furlough of non-essential government employees; brief funding gaps without furloughs do not trigger resolution",
+          "resolution_trigger": "A government shutdown begins on or continues through December 12, 2026",
+          "delay_revision": "Not found in published rules for this contract",
+          "ambiguity_cancellation": "Rule 6.3(c): if outcome is unresolvable, settles at last-traded price prior to circumstances becoming known; \u201cbrief funding gaps that do not result in furloughs typically do not trigger resolution\u201d (per market description)",
+          "decision_path": "Outcome Review Committee (ORC); determinations are final and not subject to review",
+          "last_verified": "2026-09-26"
+        },
+        "polymarket_us": {
+          "not_listed": true,
+          "note": "Standalone December 12 shutdown contract not confirmed in published Polymarket US listings as of 2026-09-26"
+        },
+        "polymarket_intl": {
+          "not_listed": false,
+          "contract_title": "Another US government shutdown & House Winner 2026? (bundled outcome; not a standalone Dec 12 contract)",
+          "url": "https://polymarket.com/event/another-us-government-shutdown-house-winner-2026",
+          "listing_entity": "Polymarket (not CFTC-regulated; blockchain-based oracle resolution)",
+          "resolution_source": "Not found in published rules for this contract",
+          "resolution_trigger": "Combined condition: an additional U.S. government shutdown AND a specific House election winner in 2026; not a standalone shutdown deadline contract",
+          "delay_revision": "Not found in published rules for this contract",
+          "ambiguity_cancellation": "Not found in published rules for this contract; UMA protocol dispute mechanism applies",
+          "decision_path": "Decentralized UMA oracle; UMA token holders vote on disputed outcomes",
+          "last_verified": "2026-09-26"
+        },
+        "cme": {
+          "not_listed": true,
+          "note": "CME event contract swaps cover elections; no government shutdown contract confirmed in published CME listings as of 2026-09-26"
+        }
+      }
+    },
+    {
+      "id": "fomc-oct-2026",
+      "title": "What will the Federal Reserve decide at the October 27\u201328, 2026 FOMC meeting?",
+      "resolution_date": "2026-10-28",
+      "divergence_rating": "Low",
+      "divergence_scenario": "The Federal Reserve\u2019s rate announcement is immediate and unambiguous; all binary event contract venues resolve against the same FOMC statement, minimizing definitional risk. The primary residual exposure is timing: if a meeting is unexpectedly postponed, Polymarket US\u2019s Rule 10.3(b) grants the Company discretion to adjust the expiration date, while Kalshi\u2019s ORC would make an equivalent determination, with no guarantee of identical timing. CME\u2019s 30-Day Federal Funds Futures are a different instrument\u2014settling against the realized monthly average rate rather than a cut/hold/hike binary\u2014and cannot be compared directly.",
+      "venues": {
+        "kalshi": {
+          "not_listed": false,
+          "contract_title": "Fed decision in October?",
+          "url": "https://kalshi.com/markets/kxfeddecision/fed-meeting/kxfeddecision-26oct",
+          "listing_entity": "KalshiEX LLC (CFTC-designated contract market)",
+          "resolution_source": "FOMC meeting statement / Federal Reserve federal funds rate announcement",
+          "resolution_trigger": "FOMC rate decision announced at the October 27\u201328, 2026 meeting",
+          "delay_revision": "Not found in published rules for this contract; general Rule 6.3(c) covers unresolvable outcomes",
+          "ambiguity_cancellation": "Rule 6.3(c): if outcome is unresolvable, settles at last-traded price prior to circumstances becoming known",
+          "decision_path": "Outcome Review Committee (ORC); determinations are final and not subject to review",
+          "last_verified": "2026-09-26"
+        },
+        "polymarket_us": {
+          "not_listed": false,
+          "contract_title": "Fed Decision in October",
+          "url": "https://polymarket.us/event/usfed-fomc-2026-10-28",
+          "listing_entity": "QCX LLC d/b/a Polymarket US (CFTC-designated contract market)",
+          "resolution_source": "FOMC meeting statement",
+          "resolution_trigger": "FOMC rate decision at the October 27\u201328, 2026 meeting",
+          "delay_revision": "Rule 10.3(b): Company may adjust Expiration Date if meeting is rescheduled or data is delayed",
+          "ambiguity_cancellation": "Rule 10.3: Company may modify contract terms at any time; \u201cCompany has full discretion in reviewing markets. Determinations made by the Company are final.\u201d",
+          "decision_path": "CEO, CCO, COO, or Head of Markets (Rule 10.4); determinations final; disputes resolved by binding arbitration in New York, NY (Rule 9.1/9.2)",
+          "last_verified": "2026-09-26"
+        },
+        "polymarket_intl": {
+          "not_listed": false,
+          "contract_title": "Fed Decision in October?",
+          "url": "https://polymarket.com/event/fed-decision-in-october-20260617190323537",
+          "listing_entity": "Polymarket (not CFTC-regulated; blockchain-based oracle resolution)",
+          "resolution_source": "FOMC meeting statement",
+          "resolution_trigger": "FOMC rate decision at the October 2026 meeting",
+          "delay_revision": "Not found in published rules for this contract",
+          "ambiguity_cancellation": "Not found in published rules for this contract; UMA protocol dispute mechanism applies",
+          "decision_path": "Decentralized UMA oracle; UMA token holders vote on disputed outcomes",
+          "last_verified": "2026-09-26"
+        },
+        "cme": {
+          "not_listed": true,
+          "note": "CME has no binary event contract for this FOMC meeting. CME lists 30-Day Federal Funds Futures (ticker: FF), a traditional interest rate futures contract that settles against the arithmetic average of the daily effective federal funds rate for the delivery month\u2014not a binary cut/hold/hike outcome. Contract specs at https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.html"
+        }
+      }
+    }
+  ],
+  "case_study": {
+    "id": "cardi-b-super-bowl-lx",
+    "title": "Cardi B at Super Bowl LX (February 2026)",
+    "event": "Super Bowl LX halftime show, February 2026",
+    "contract_question": "Will Cardi B perform at Super Bowl LX?",
+    "description": "An event contract on whether Cardi B would perform at Super Bowl LX traded on both Kalshi and Polymarket. When Cardi B made a guest appearance during the halftime show, the question of whether the appearance met the contract\u2019s definition of a qualifying \u201cperformance\u201d was disputed across venues.",
+    "venues": {
+      "kalshi": {
+        "resolution": "Unresolvable",
+        "settlement_price_yes": 0.26,
+        "settlement_price_no": 0.74,
+        "mechanism": "Rule 6.3(c) last-traded-price settlement; outcome declared unresolvable",
+        "notes": "Kalshi determined the appearance did not clearly satisfy the contract\u2019s resolution criteria and settled at the price at which the contract last traded"
+      },
+      "polymarket_intl": {
+        "resolution": "YES",
+        "settlement_price_yes": 1.00,
+        "settlement_price_no": 0.00,
+        "mechanism": "UMA oracle resolved YES; appearance treated as a qualifying performance",
+        "notes": "Resolved at full $1.00 payout for YES holders"
+      }
+    },
+    "illustrative_spread": {
+      "description": "100 YES contracts held at last-traded price of $0.65 each (total cost $65.00)",
+      "polymarket_received": 100.00,
+      "polymarket_gain_loss": 35.00,
+      "kalshi_received": 26.00,
+      "kalshi_gain_loss": -39.00,
+      "settlement_gap_per_contract": 0.74,
+      "settlement_gap_total": 74.00,
+      "gap_as_pct_of_full_payout": 74
+    },
+    "last_verified": "2026-09-26"
+  }
+}
