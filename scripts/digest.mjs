@@ -129,7 +129,7 @@ draft: true
 
 ${warning}${draft.body_markdown.trim()}
 
-*Drafted with AI from this site's data, then reviewed and edited by Bobby Sullivan.*
+*Drafted with AI from this site's data, then reviewed and edited before publishing.*
 `;
   await mkdir(dir, { recursive: true });
   await writeFile(file, md);
