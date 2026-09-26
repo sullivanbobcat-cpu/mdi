@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0D1117"/>
+
+  <!-- Left accent bar -->
+  <rect x="72" y="100" width="6" height="430" rx="3" fill="#1F72E5" opacity=".7"/>
+
+  <!-- Brand -->
+  <text x="96" y="148" font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-size="26" font-weight="600" letter-spacing="0.04em" fill="#8B949E">MARKET DATA INSIDER</text>
+
+  <!-- Headline -->
+  <text x="96" y="256" font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-size="72" font-weight="700" fill="#FFD266" letter-spacing="-0.01em">Event contract</text>
+  <text x="96" y="336" font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-size="72" font-weight="700" fill="#FFD266" letter-spacing="-0.01em">settlement</text>
+  <text x="96" y="416" font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-size="72" font-weight="700" fill="#E6EDF3" letter-spacing="-0.01em">comparison</text>
+
+  <!-- Venue labels -->
+  <text x="96" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="500" fill="#8B949E">Kalshi</text>
+  <text x="206" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="400" fill="#30363D">·</text>
+  <text x="228" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="500" fill="#8B949E">Polymarket US</text>
+  <text x="444" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="400" fill="#30363D">·</text>
+  <text x="466" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="500" fill="#8B949E">Polymarket Intl.</text>
+  <text x="728" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="400" fill="#30363D">·</text>
+  <text x="750" y="496" font-family="'Barlow', system-ui, sans-serif" font-size="30" font-weight="500" fill="#8B949E">CME</text>
+
+  <!-- Divider -->
+  <rect x="96" y="528" width="600" height="1" fill="#30363D"/>
+
+  <!-- Tagline -->
+  <text x="96" y="566" font-family="'Barlow', system-ui, sans-serif" font-size="22" font-weight="400" fill="#8B949E">Who decides. How they settle. What diverges.</text>
+</svg>

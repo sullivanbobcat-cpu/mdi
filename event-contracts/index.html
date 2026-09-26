@@ -6,6 +6,21 @@
 <meta name="theme-color" content="#0D1117">
 <title>Event contract settlement comparison | Market Data Insider</title>
 <meta name="description" content="How Kalshi, Polymarket US, Polymarket International, and CME define settlement, handle ambiguity, and resolve disputes on the same event contracts.">
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Market Data Insider">
+<meta property="og:title" content="Event contract settlement comparison | Market Data Insider">
+<meta property="og:description" content="How Kalshi, Polymarket US, Polymarket International, and CME define settlement, handle ambiguity, and resolve disputes on the same event contracts.">
+<meta property="og:url" content="https://marketdatainsider.com/event-contracts/">
+<meta property="og:image" content="https://marketdatainsider.com/assets/og-event-contracts.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Event contract settlement comparison | Market Data Insider">
+<meta name="twitter:description" content="How Kalshi, Polymarket US, Polymarket International, and CME define settlement, handle ambiguity, and resolve disputes on the same event contracts.">
+<meta name="twitter:image" content="https://marketdatainsider.com/assets/og-event-contracts.svg">
+<!-- Note: Facebook/Instagram require PNG. Convert with: npx sharp-cli assets/og-event-contracts.svg assets/og-event-contracts.png -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +52,15 @@
 .spread-table .loss { color: var(--down); }
 .case-callout { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--down); border-radius: 4px; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: .9375rem; }
 .case-callout strong { color: var(--ink); }
+.signup { border-top: 1px solid var(--rule); padding: 2.75rem 0; }
+.signup h2 { font: 600 1.625rem/1.1 var(--cond); margin: 0 0 .5rem; }
+.signup p { color: var(--muted); margin: 0 0 1.25rem; max-width: 38rem; font-size: .9375rem; }
+.signup-form { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-start; max-width: 32rem; }
+.signup-form input[type="email"] { flex: 1 1 14rem; font: 400 1rem var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: .5625rem .875rem; }
+.signup-form input[type="email"]::placeholder { color: var(--muted); }
+.signup-form input[type="email"]:focus { outline: 2px solid var(--grain); outline-offset: 2px; border-color: transparent; }
+.signup-form button { font: 600 1rem var(--sans); color: var(--paper); background: var(--grain); border: none; border-radius: 4px; padding: .5625rem 1.25rem; cursor: pointer; white-space: nowrap; }
+.signup-form button:hover { filter: brightness(1.1); }
 </style>
 </head>
 <body>
@@ -359,6 +383,17 @@
       <p>Each row is drawn directly from the venue&rsquo;s published rulebook or contract specification, paraphrased with one short quotation where the exact wording is material. Fields marked <em>Not found in published rules</em> were absent from the rulebook, contract spec, and market description page at the time of research (verified 2026-09-26). Sources consulted: KalshiEX LLC Rulebook (CFTC filings); Polymarket US Rulebook (QCX LLC, July 2, 2026 edition); CME Chapter&nbsp;22 Event Contract Swaps and related CFTC submissions; Polymarket International market pages.</p>
       <p>Divergence ratings (Low / Medium / High) are editorial judgments based on how far the venues&rsquo; definitions and procedures could produce different settlement prices on the same real-world outcome. <strong>This page is a proof-of-concept research artifact and is not updated automatically.</strong> Rules change; verify against current rulebooks before relying on any field.</p>
       <p class="disclaimer" style="margin-top: 1rem;">Personal project. Not affiliated with or endorsed by any employer, venue, or counterparty. Nothing on this site is investment advice. Cross-venue positions involve risk of divergent settlement.</p>
+    </section>
+    <!-- Signup -->
+    <section class="signup" id="signup">
+      <h2>Get the settlement scorecard when contracts resolve</h2>
+      <p>One email per contract, sent after resolution. No newsletters, no marketing.</p>
+      <form class="signup-form" name="settlement-scorecard" method="POST" action="/event-contracts/thanks/" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="settlement-scorecard">
+        <input name="bot-field" type="text" hidden aria-hidden="true" tabindex="-1" autocomplete="off">
+        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit">Notify me</button>
+      </form>
     </section>
   </main>
 

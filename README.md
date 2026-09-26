@@ -31,5 +31,9 @@ Copy `notes/_template.md` to `notes/YYYY-MM-DD-short-title.md`, fill it in, dele
 - `EIA_API_KEY` (required for energy): free at https://www.eia.gov/opendata/register.php
 - `SOCRATA_APP_TOKEN` (optional)
 
+## Contact
+<!-- TODO: replace placeholder with real brand email before publishing contact details anywhere -->
+Brand email: hello@marketdatainsider.com
+
 ## Rules
 Public data only. No exchange futures prices. Name every source. Personal project, not affiliated with any employer, not investment advice.
