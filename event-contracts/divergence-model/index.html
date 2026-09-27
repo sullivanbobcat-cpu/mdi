@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D1117">
+<meta name="robots" content="noindex">
+<title>Settlement divergence model | Market Data Insider</title>
+<meta name="description" content="Monte Carlo scenario tool: model P&L distribution when event contract venues settle the same real-world outcome differently.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+/* ── Layout ── */
+.dm-banner { background: var(--surface); border: 1px solid var(--grain); border-radius: 4px; padding: .75rem 1rem; margin: 1.5rem 0 2rem; font-size: .9375rem; color: var(--ink); }
+.dm-banner strong { color: var(--grain); }
+.dm-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 2rem; align-items: start; }
+@media (max-width: 52rem) { .dm-grid { grid-template-columns: 1fr; } }
+
+/* ── Inputs ── */
+.dm-section { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.25rem; }
+.dm-section h2 { font: 600 1.25rem/1.1 var(--cond); margin: 0 0 1rem; }
+.dm-section h3 { font: 600 1rem/1.1 var(--cond); margin: 1.25rem 0 .5rem; color: var(--muted); }
+fieldset { border: none; padding: 0; margin: 0; }
+legend { font: 600 .875rem/1.2 var(--cond); color: var(--muted); padding: 0; margin: 0 0 .5rem; }
+.field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .5rem .75rem; margin-bottom: .75rem; }
+.field { display: flex; flex-direction: column; gap: .25rem; }
+.field label { font-size: .8125rem; color: var(--muted); font-weight: 500; }
+.field input, .field select { font: 400 .9375rem var(--sans); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: .375rem .625rem; width: 100%; }
+.field input:focus, .field select:focus { outline: 2px solid var(--grain); outline-offset: 2px; border-color: transparent; }
+.leg-block { border: 1px solid var(--rule); border-radius: 4px; padding: .875rem; margin-bottom: .625rem; position: relative; }
+.leg-block .leg-title { font: 600 .875rem/1 var(--cond); color: var(--grain); margin: 0 0 .625rem; }
+.leg-remove { position: absolute; top: .75rem; right: .75rem; background: none; border: none; color: var(--muted); font-size: 1.25rem; cursor: pointer; padding: 0; line-height: 1; }
+.leg-remove:hover { color: var(--down); }
+.mode-extra { margin-top: .5rem; }
+.btn-add-leg { font: 500 .875rem var(--sans); color: var(--link); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: .375rem .75rem; cursor: pointer; margin-top: .25rem; }
+.btn-add-leg:hover { border-color: var(--link); }
+.presets { display: flex; gap: .375rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.preset-btn { font: 500 .8125rem var(--cond); background: var(--paper); color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: .3rem .625rem; cursor: pointer; white-space: nowrap; }
+.preset-btn:hover { color: var(--ink); border-color: var(--muted); }
+.preset-btn.cardiB { border-color: var(--grain); color: var(--grain); }
+.preset-note { font-size: .8125rem; color: var(--muted); font-style: italic; margin: .25rem 0 0; }
+.run-btn { display: block; width: 100%; font: 600 1rem var(--sans); color: var(--paper); background: var(--grain); border: none; border-radius: 4px; padding: .6875rem 1.25rem; cursor: pointer; margin-top: 1rem; }
+.run-btn:hover { filter: brightness(1.1); }
+.run-btn:disabled { opacity: .5; cursor: default; filter: none; }
+
+/* ── Results ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
+.stat-tile { background: var(--surface); padding: .875rem 1rem; }
+.stat-tile .label { font-size: .8125rem; color: var(--muted); }
+.stat-tile .value { font: 600 1.625rem/1.1 var(--cond); margin: .25rem 0 0; }
+.stat-tile .value.up { color: var(--up); }
+.stat-tile .value.down { color: var(--down); }
+@media (max-width: 40rem) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+.chart-panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem; margin-bottom: 1.25rem; }
+.chart-panel h3 { font: 600 1rem/1.1 var(--cond); margin: 0 0 .875rem; color: var(--muted); }
+.svg-chart { display: block; width: 100%; overflow: visible; }
+
+/* ── Matrix ── */
+.matrix-panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem; }
+.matrix-panel h3 { font: 600 1rem/1.1 var(--cond); margin: 0 0 .25rem; }
+.matrix-panel .lede { font-size: .875rem; color: var(--muted); margin: 0 0 .875rem; }
+
+/* ── Calibration log ── */
+.cal-table { width: 100%; border-collapse: collapse; font-size: .875rem; margin-top: .75rem; }
+.cal-table th { font: 600 .8125rem/1.2 var(--cond); color: var(--muted); text-align: left; padding: .3rem .5rem .3rem 0; border-bottom: 1px solid var(--rule); }
+.cal-table td { padding: .375rem .5rem .375rem 0; border-bottom: 1px solid var(--rule); }
+.cal-note { font-size: .8125rem; color: var(--muted); font-style: italic; margin-top: .375rem; }
+
+/* ── Placeholder state ── */
+.placeholder { color: var(--muted); font-size: .9375rem; padding: 2rem; text-align: center; border: 1px dashed var(--rule); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/">Market Data Insider</a>
+    <nav aria-label="Markets"><a href="/grain-freight/">Grain freight</a><a href="/energy/">Energy</a><a href="/notes/">Notes</a><a href="/event-contracts/">Event contracts</a></nav>
+    <span class="stamp"></span>
+  </header>
+
+  <main>
+    <h1 class="page-title" style="margin-top: 2.5rem;">Settlement divergence model</h1>
+    <p class="page-lede" style="max-width: 44rem;">Monte Carlo scenario tool: model the P&amp;L distribution of a cross-venue position when venues may settle the same real-world event differently.</p>
+
+    <!-- Persistent disclaimer -->
+    <div class="dm-banner" role="note" aria-label="Disclaimer">
+      <strong>Scenario tool.</strong> Divergence probabilities are user assumptions, not measured rates. Results depend entirely on inputs you supply. Not trading advice. No buy or sell recommendations are made or implied.
+    </div>
+
+    <div class="dm-grid">
+      <!-- ── LEFT: Inputs ── -->
+      <div>
+        <div class="dm-section">
+          <h2>Position legs</h2>
+
+          <!-- Presets -->
+          <div>
+            <div class="presets">
+              <button class="preset-btn cardiB" id="preset-cardib">Cardi&nbsp;B replay</button>
+              <button class="preset-btn" data-preset="economic_data">Economic data</button>
+              <button class="preset-btn" data-preset="election">Election</button>
+              <button class="preset-btn" data-preset="government_action">Gov&rsquo;t action</button>
+              <button class="preset-btn" data-preset="sports">Sports</button>
+              <button class="preset-btn" data-preset="entertainment">Entertainment</button>
+            </div>
+            <p class="preset-note">Type presets set a default divergence probability per leg. <em>Illustrative assumption &mdash; not a measured rate.</em></p>
+          </div>
+
+          <div id="legs-container"></div>
+          <button class="btn-add-leg" id="add-leg">+ Add leg</button>
+
+          <h3>Simulation parameters</h3>
+          <div class="field-row">
+            <div class="field">
+              <label for="param-p">True outcome prob. <em>p</em></label>
+              <input type="number" id="param-p" min="0.01" max="0.99" step="0.01" value="0.50">
+            </div>
+            <div class="field">
+              <label for="param-n">Simulations</label>
+              <input type="number" id="param-n" min="100" max="100000" step="1000" value="10000">
+            </div>
+            <div class="field">
+              <label for="param-seed">Random seed</label>
+              <input type="number" id="param-seed" min="0" max="4294967295" step="1" value="42">
+            </div>
+          </div>
+
+          <button class="run-btn" id="run-btn">Run simulation</button>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: Results ── -->
+      <div id="results-col">
+        <div class="placeholder" id="placeholder">Configure legs and click &ldquo;Run simulation&rdquo; to see results.</div>
+        <div id="results-panel" hidden>
+          <div class="stats-row" id="stats-row"></div>
+          <div class="chart-panel">
+            <h3>P&amp;L distribution</h3>
+            <svg class="svg-chart" id="hist-svg" aria-label="P&L histogram"></svg>
+          </div>
+          <div class="matrix-panel">
+            <h3>THE MATRIX &mdash; 95% CVaR across <em>p</em> &times; <em>q</em></h3>
+            <p class="lede">Tail loss (95% CVaR) at each combination of true-outcome probability and uniform divergence rate. Redder = larger loss.</p>
+            <svg class="svg-chart" id="matrix-svg" aria-label="CVaR heatmap"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calibration log -->
+    <section class="panel" id="cal-panel" style="margin-top: 1.5rem;">
+      <div class="panel-head"><div>
+        <h2>Calibration log</h2>
+        <p class="lede">Resolved contracts where cross-venue divergence was observed. Used to track empirical base rates per contract type.</p>
+      </div></div>
+      <div id="cal-content"><p class="placeholder">Loading calibration data&hellip;</p></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Commodity fundamentals from public data. Sources are named on each page.</p>
+    <p class="disclaimer">Personal project. Not affiliated with or endorsed by any employer. Nothing on this site is investment advice.</p>
+  </footer>
+</div>
+
+<script type="module">
+import { runSimulation, computeStats, buildHistogram, buildMatrix, DIVERGENCE_PRESETS, makeSeededRng } from '/assets/divergence.js';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, text) => {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  if (text != null) e.textContent = text;
+  return e;
+};
+const fmt = (v, dp = 2) => (v < 0 ? '−' : '+') + '$' + Math.abs(v).toFixed(dp);
+const fmtPct = (v, dp = 1) => (v * 100).toFixed(dp) + '%';
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// ── Leg management ───────────────────────────────────────────────────────────
+let legCount = 0;
+
+function addLeg(defaults = {}) {
+  if (legCount >= 4) return;
+  legCount++;
+  const id = legCount;
+  const d = {
+    venue: '', side: 'YES', entry: 0.50, contracts: 100,
+    q: 0.08, mode: 'opposite', ltpMin: 0.20, ltpMax: 0.40,
+    ...defaults,
+  };
+
+  const block = el('div', { class: 'leg-block', 'data-leg-id': id });
+  block.innerHTML = `
+    <p class="leg-title">Leg ${id}</p>
+    <button class="leg-remove" aria-label="Remove leg ${id}" data-leg-id="${id}">&times;</button>
+    <div class="field-row">
+      <div class="field"><label for="leg-${id}-venue">Venue</label>
+        <input type="text" id="leg-${id}-venue" value="${d.venue}" placeholder="e.g. Kalshi" maxlength="30"></div>
+      <div class="field"><label for="leg-${id}-side">Side</label>
+        <select id="leg-${id}-side">
+          <option value="YES"${d.side==='YES'?' selected':''}>YES</option>
+          <option value="NO"${d.side==='NO'?' selected':''}>NO</option>
+        </select></div>
+      <div class="field"><label for="leg-${id}-entry">Entry price ($)</label>
+        <input type="number" id="leg-${id}-entry" min="0.01" max="0.99" step="0.01" value="${d.entry}"></div>
+      <div class="field"><label for="leg-${id}-contracts">Contracts</label>
+        <input type="number" id="leg-${id}-contracts" min="1" step="1" value="${d.contracts}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="leg-${id}-q">Divergence prob. <em>q</em></label>
+        <input type="number" id="leg-${id}-q" min="0" max="1" step="0.01" value="${d.q}"></div>
+      <div class="field"><label for="leg-${id}-mode">Divergence mode</label>
+        <select id="leg-${id}-mode">
+          <option value="opposite"${d.mode==='opposite'?' selected':''}>Resolves opposite</option>
+          <option value="last_traded"${d.mode==='last_traded'?' selected':''}>Last-traded price</option>
+        </select></div>
+    </div>
+    <div class="mode-extra" id="leg-${id}-ltp" style="${d.mode==='last_traded'?'':'display:none'}">
+      <div class="field-row">
+        <div class="field"><label for="leg-${id}-ltpMin">LTP range min ($)</label>
+          <input type="number" id="leg-${id}-ltpMin" min="0" max="1" step="0.01" value="${d.ltpMin}"></div>
+        <div class="field"><label for="leg-${id}-ltpMax">LTP range max ($)</label>
+          <input type="number" id="leg-${id}-ltpMax" min="0" max="1" step="0.01" value="${d.ltpMax}"></div>
+      </div>
+    </div>`;
+
+  block.querySelector(`#leg-${id}-mode`).addEventListener('change', (e) => {
+    block.querySelector(`#leg-${id}-ltp`).style.display = e.target.value === 'last_traded' ? '' : 'none';
+  });
+  block.querySelector('.leg-remove').addEventListener('click', () => {
+    block.remove();
+    legCount = Math.max(0, legCount - 1);
+    updateAddBtn();
+  });
+
+  $('legs-container').appendChild(block);
+  updateAddBtn();
+}
+
+function updateAddBtn() {
+  $('add-leg').disabled = document.querySelectorAll('.leg-block').length >= 4;
+}
+
+function readLegs() {
+  const blocks = document.querySelectorAll('.leg-block');
+  return Array.from(blocks).map((b) => {
+    const id = b.dataset.legId;
+    return {
+      venue:     b.querySelector(`#leg-${id}-venue`).value || `Venue ${id}`,
+      side:      b.querySelector(`#leg-${id}-side`).value,
+      entry:     clamp(+b.querySelector(`#leg-${id}-entry`).value, 0.01, 0.99),
+      contracts: Math.max(1, +b.querySelector(`#leg-${id}-contracts`).value),
+      q:         clamp(+b.querySelector(`#leg-${id}-q`).value, 0, 1),
+      mode:      b.querySelector(`#leg-${id}-mode`).value,
+      ltpMin:    clamp(+b.querySelector(`#leg-${id}-ltpMin`).value, 0, 1),
+      ltpMax:    clamp(+b.querySelector(`#leg-${id}-ltpMax`).value, 0, 1),
+    };
+  });
+}
+
+// ── Presets ──────────────────────────────────────────────────────────────────
+$('preset-cardib').addEventListener('click', () => {
+  $('legs-container').innerHTML = '';
+  legCount = 0;
+  addLeg({ venue: 'Kalshi', side: 'YES', entry: 0.20, contracts: 100, q: 0.30, mode: 'last_traded', ltpMin: 0.20, ltpMax: 0.30 });
+  addLeg({ venue: 'Polymarket', side: 'NO', entry: 0.78, contracts: 100, q: 0.30, mode: 'opposite' });
+  $('param-p').value = '0.70';
+  $('param-seed').value = '42';
+  showPresetNote('Cardi\u00a0B replay — entry prices illustrative. q\u00a0=\u00a00.30 is an illustrative assumption, not a measured rate.');
+});
+
+document.querySelectorAll('[data-preset]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.preset;
+    const q = DIVERGENCE_PRESETS[key]?.q ?? 0.08;
+    document.querySelectorAll('.leg-block').forEach((b) => {
+      const id = b.dataset.legId;
+      b.querySelector(`#leg-${id}-q`).value = q;
+    });
+    showPresetNote(`${DIVERGENCE_PRESETS[key].label}: q\u00a0=\u00a0${q} — illustrative assumption, not a measured rate.`);
+  });
+});
+
+function showPresetNote(msg) {
+  let note = $('active-preset-note');
+  if (!note) {
+    note = el('p', { id: 'active-preset-note', class: 'preset-note', style: 'color: var(--grain); margin-top: .5rem;' });
+    $('legs-container').before(note);
+  }
+  note.textContent = msg;
+}
+
+$('add-leg').addEventListener('click', () => addLeg());
+
+// ── Run ───────────────────────────────────────────────────────────────────────
+$('run-btn').addEventListener('click', () => {
+  const legs = readLegs();
+  if (!legs.length) { alert('Add at least one leg.'); return; }
+
+  const p    = clamp(+$('param-p').value, 0.01, 0.99);
+  const n    = clamp(+$('param-n').value, 100, 100000);
+  const seed = (+$('param-seed').value) >>> 0;
+
+  const cfg = { p, legs, n, seed };
+  $('run-btn').disabled = true;
+  $('run-btn').textContent = 'Running…';
+
+  // Yield to browser to update button, then run
+  setTimeout(() => {
+    try {
+      const pnls   = runSimulation(cfg);
+      const stats  = computeStats(pnls);
+      const hist   = buildHistogram(pnls);
+      const matrix = buildMatrix(cfg,
+        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        [0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.17, 0.20]
+      );
+
+      renderStats(stats);
+      renderHistogram(hist, stats);
+      renderMatrix(matrix);
+
+      $('placeholder').hidden = true;
+      $('results-panel').hidden = false;
+    } finally {
+      $('run-btn').disabled = false;
+      $('run-btn').textContent = 'Run simulation';
+    }
+  }, 10);
+});
+
+// ── Stats tiles ──────────────────────────────────────────────────────────────
+function renderStats({ mean, pLoss, var95, cvar95 }) {
+  $('stats-row').innerHTML = [
+    ['E[P&amp;L]',       fmt(mean),          mean >= 0 ? 'up' : 'down'],
+    ['P(loss)',         fmtPct(pLoss),       pLoss > 0.5 ? 'down' : ''],
+    ['95% VaR',        fmt(var95),          var95 < 0 ? 'down' : 'up'],
+    ['95% CVaR',       fmt(cvar95),         cvar95 < 0 ? 'down' : 'up'],
+  ].map(([label, value, cls]) =>
+    `<div class="stat-tile"><div class="label">${label}</div><div class="value ${cls}">${value}</div></div>`
+  ).join('');
+}
+
+// ── Histogram SVG ─────────────────────────────────────────────────────────────
+function renderHistogram({ bins, min, max }, { var95 }) {
+  const W = 480, H = 200, PL = 44, PR = 12, PT = 8, PB = 28;
+  const cW = W - PL - PR, cH = H - PT - PB;
+  const maxCount = Math.max(...bins.map((b) => b.count));
+  const xScale = (v) => PL + ((v - min) / (max - min)) * cW;
+  const yScale = (c) => PT + cH - (c / maxCount) * cH;
+  const barW = cW / bins.length - 1;
+
+  let svg = `<svg class="svg-chart" viewBox="0 0 ${W} ${H}" id="hist-svg" aria-label="P&L histogram">`;
+
+  // Zero line
+  if (min < 0 && max > 0) {
+    const x0 = xScale(0);
+    svg += `<line x1="${x0}" y1="${PT}" x2="${x0}" y2="${PT + cH}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3,3"/>`;
+  }
+
+  // VaR line
+  if (var95 >= min && var95 <= max) {
+    const xv = xScale(var95);
+    svg += `<line x1="${xv}" y1="${PT}" x2="${xv}" y2="${PT + cH}" stroke="var(--down)" stroke-width="1" stroke-dasharray="4,3"/>`;
+    svg += `<text x="${xv + 3}" y="${PT + 10}" font-size="10" fill="var(--down)" font-family="var(--cond)">VaR</text>`;
+  }
+
+  // Bars
+  for (let i = 0; i < bins.length; i++) {
+    const b = bins[i];
+    const x = xScale(b.lo);
+    const h = (b.count / maxCount) * cH;
+    const y = PT + cH - h;
+    const isLoss = b.hi <= 0;
+    const fill = isLoss ? 'var(--down)' : b.lo < 0 ? 'var(--muted)' : 'var(--grain)';
+    svg += `<rect x="${x}" y="${y}" width="${Math.max(0.5, barW)}" height="${h}" fill="${fill}" opacity="0.85"/>`;
+  }
+
+  // X axis
+  svg += `<line x1="${PL}" y1="${PT+cH}" x2="${PL+cW}" y2="${PT+cH}" stroke="var(--rule)"/>`;
+
+  // X ticks
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = min + (max - min) * (i / ticks);
+    const x = xScale(v);
+    const label = (v >= 0 ? '+$' : '−$') + Math.abs(v).toFixed(1);
+    svg += `<text x="${x}" y="${PT + cH + 14}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="var(--sans)">${label}</text>`;
+  }
+
+  // Y axis label
+  svg += `<text x="${PL - 4}" y="${PT + cH / 2}" text-anchor="middle" transform="rotate(-90,${PL-4},${PT+cH/2})" font-size="9" fill="var(--muted)" font-family="var(--sans)">Frequency</text>`;
+
+  svg += '</svg>';
+  $('hist-svg').outerHTML = svg;
+}
+
+// ── Matrix SVG ────────────────────────────────────────────────────────────────
+function renderMatrix({ pGrid, qGrid, cells }) {
+  const CELL = 38, PAD_L = 46, PAD_T = 16, PAD_B = 32, PAD_R = 12;
+  const cols = pGrid.length, rows = qGrid.length;
+  const W = PAD_L + cols * CELL + PAD_R;
+  const H = PAD_T + rows * CELL + PAD_B;
+
+  // Find range for color scale
+  let minV = Infinity, maxV = -Infinity;
+  for (const row of cells) for (const v of row) { if (v < minV) minV = v; if (v > maxV) maxV = v; }
+  const range = maxV - minV || 1;
+
+  // Color: interpolate from grain (best/least loss) to down (worst)
+  function cellColor(v) {
+    const t = clamp((v - maxV) / (minV - maxV), 0, 1); // 0=best(small loss), 1=worst
+    // grain=#FFD266, down=#FF3B30, surface=#161B22
+    const r = Math.round(0xFF + t * (0xFF - 0xFF));
+    const g = Math.round(0xD2 + t * (0x3B - 0xD2));
+    const b = Math.round(0x66 + t * (0x30 - 0x66));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  let svg = `<svg class="svg-chart" viewBox="0 0 ${W} ${H}" aria-label="CVaR heatmap">`;
+
+  // Column headers (p values)
+  for (let ci = 0; ci < cols; ci++) {
+    const x = PAD_L + ci * CELL + CELL / 2;
+    svg += `<text x="${x}" y="${PAD_T - 3}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="var(--sans)">${pGrid[ci].toFixed(1)}</text>`;
+  }
+  svg += `<text x="${PAD_L + cols*CELL/2}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="var(--sans)">True outcome prob. p →</text>`;
+
+  // Row headers (q values) and cells
+  for (let ri = 0; ri < rows; ri++) {
+    const y = PAD_T + ri * CELL;
+    svg += `<text x="${PAD_L - 4}" y="${y + CELL/2 + 4}" text-anchor="end" font-size="9" fill="var(--muted)" font-family="var(--sans)">${(qGrid[ri]*100).toFixed(0)}%</text>`;
+    for (let ci = 0; ci < cols; ci++) {
+      const v = cells[ci][ri];
+      const x = PAD_L + ci * CELL;
+      const color = cellColor(v);
+      svg += `<rect x="${x+1}" y="${y+1}" width="${CELL-2}" height="${CELL-2}" fill="${color}" rx="2">`;
+      svg += `<title>p=${pGrid[ci]}, q=${(qGrid[ri]*100).toFixed(0)}%: CVaR=${fmt(v)}</title></rect>`;
+      svg += `<text x="${x+CELL/2}" y="${y+CELL/2+4}" text-anchor="middle" font-size="8.5" fill="var(--paper)" font-weight="600" font-family="var(--cond)">${fmt(v,1)}</text>`;
+    }
+  }
+
+  // Y axis label
+  svg += `<text x="8" y="${PAD_T + rows*CELL/2}" text-anchor="middle" transform="rotate(-90,8,${PAD_T+rows*CELL/2})" font-size="9" fill="var(--muted)" font-family="var(--sans)">Div. rate q →</text>`;
+
+  svg += '</svg>';
+  $('matrix-svg').outerHTML = svg;
+}
+
+// ── Calibration log ───────────────────────────────────────────────────────────
+const TYPE_LABELS = {
+  economic_data: 'Economic data', election: 'Election',
+  government_action: "Gov't action", sports: 'Sports', entertainment: 'Entertainment',
+};
+
+async function loadCalibration() {
+  let data;
+  try {
+    const r = await fetch('/data/divergence-log.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`${r.status}`);
+    data = await r.json();
+  } catch (e) {
+    $('cal-content').innerHTML = `<p class="placeholder">Calibration data not available (${e.message}).</p>`;
+    return;
+  }
+  const entries = data.entries || [];
+
+  // Aggregate by type
+  const byType = {};
+  for (const entry of entries) {
+    const t = entry.contract_type;
+    if (!byType[t]) byType[t] = { total: 0, diverged: 0 };
+    byType[t].total++;
+    if (entry.diverged) byType[t].diverged++;
+  }
+
+  let html = `<table class="cal-table">
+    <thead><tr><th>Contract type</th><th>Events logged</th><th>Diverged</th><th>Empirical rate</th><th>Status</th></tr></thead><tbody>`;
+
+  // Show all preset types, merging with logged data
+  for (const [key, preset] of Object.entries(DIVERGENCE_PRESETS)) {
+    const d = byType[key] || { total: 0, diverged: 0 };
+    const rate = d.total > 0 ? (d.diverged / d.total * 100).toFixed(0) + '%' : '—';
+    const status = d.total === 0 ? 'No data' : d.total < 50 ? `n\u00a0=\u00a0${d.total}\u00a0\u2014 not calibrated` : `n\u00a0=\u00a0${d.total}\u00a0\u2014 use logged rate`;
+    html += `<tr><td>${TYPE_LABELS[key] || key}</td><td>${d.total}</td><td>${d.diverged}</td><td>${rate}</td><td style="color:var(--muted);font-style:italic">${status}</td></tr>`;
+  }
+  html += '</tbody></table>';
+
+  if (entries.length) {
+    html += `<h3 style="font:600 1rem/1.1 var(--cond);margin:1.25rem 0 .5rem;color:var(--muted)">Logged entries</h3>`;
+    html += `<table class="cal-table"><thead><tr><th>Event</th><th>Type</th><th>Venues</th><th>Diverged</th><th>Gap (¢)</th><th>Cause</th><th>Logged</th></tr></thead><tbody>`;
+    for (const e of entries) {
+      html += `<tr>
+        <td>${e.event}</td>
+        <td>${TYPE_LABELS[e.contract_type] || e.contract_type}</td>
+        <td>${Array.isArray(e.venues) ? e.venues.join(', ') : e.venues}</td>
+        <td>${e.diverged ? 'Yes' : 'No'}</td>
+        <td>${e.divergence_size_cents ?? '—'}</td>
+        <td style="max-width:20rem;font-size:.8125rem">${e.cause}</td>
+        <td style="white-space:nowrap">${e.date_logged}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+  }
+
+  html += `<p class="cal-note">Once any contract type reaches n\u00a0\u2265\u00a050 logged events, it will be offered as an optional "use logged rate" input in the divergence probability field.</p>`;
+  $('cal-content').innerHTML = html;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+addLeg({ venue: 'Venue A', side: 'YES', entry: 0.55, contracts: 100, q: 0.08, mode: 'opposite' });
+addLeg({ venue: 'Venue B', side: 'NO',  entry: 0.45, contracts: 100, q: 0.08, mode: 'opposite' });
+loadCalibration();
+</script>
+</body>
+</html>

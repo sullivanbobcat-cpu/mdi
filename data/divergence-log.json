@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "description": "Logged resolved event contracts where cross-venue settlement divergence was observed or confirmed. Used to calibrate illustrative divergence rates. Hand-curated; not auto-refreshed.",
+    "last_updated": "2026-09-26"
+  },
+  "entries": [
+    {
+      "id": "cardi-b-super-bowl-lx-2026",
+      "event": "Will Cardi B perform at Super Bowl LX halftime show?",
+      "contract_type": "entertainment",
+      "venues": ["Kalshi", "Polymarket"],
+      "settlement_per_venue": {
+        "Kalshi": 0.26,
+        "Polymarket": 1.00
+      },
+      "diverged": true,
+      "divergence_size_cents": 74,
+      "cause": "Ambiguity clause — Kalshi invoked Rule 6.3(c) last-traded-price settlement after determining the guest appearance did not clearly satisfy resolution criteria; Polymarket oracle resolved YES at full payout",
+      "resolution_time_hours": null,
+      "source_urls": [
+        "https://www.cbsnews.com/news/super-bowl-halftime-show-cardi-b-2026/",
+        "https://frontofficesports.com/kalshi-polymarket-super-bowl-cardi-b-settlement/"
+      ],
+      "date_logged": "2026-09-26"
+    }
+  ]
+}
