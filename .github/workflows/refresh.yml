@@ -22,8 +22,11 @@ jobs:
         env:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
       - name: Energy (EIA)
-        run: npm run refresh:energy
+        id: energy
         continue-on-error: true
+        run: |
+          if [ -z "$EIA_API_KEY" ]; then echo "::error::EIA_API_KEY secret is not set, energy data will not refresh"; exit 1; fi
+          npm run refresh:energy
         env:
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
       - name: Commit if changed
@@ -34,3 +37,8 @@ jobs:
           if git diff --cached --quiet; then echo "No new data"; exit 0; fi
           git commit -m "data: refresh $(date -u +%Y-%m-%d)"
           git push
+      - name: Fail run if energy refresh failed
+        if: steps.energy.outcome == 'failure'
+        run: |
+          echo "::error::Energy refresh failed. Grain data was still committed. Check the Energy (EIA) step log."
+          exit 1
