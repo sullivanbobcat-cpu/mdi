@@ -20,3 +20,11 @@
   from = "/grain/*"
   to = "/grain-freight/"
   status = 301
+
+# Private energy model dashboard. Served from a separate, password-protected
+# Netlify project (private repo); nothing from it is stored in this repository.
+[[redirects]]
+  from = "/model/*"
+  to = "https://mdi-energy-model.netlify.app/:splat"
+  status = 200
+  force = true
